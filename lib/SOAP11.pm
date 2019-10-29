@@ -1186,61 +1186,11 @@ sub delAdmins($$) {
 
 
 
-
-################################################################################
-# getListDefinition
-# 	get attributes of a list
 #
-################################################################################
-sub getListDefinition($$) {
-	my ($server, $in) = @_;
-
-	# check auth
-	return Sympa::WWW::SOAP11::Error::unauthorized() 
-	if not checkAuth($in);
-
-	# get parameters
-	my $listname = $in->{getListDefinitionRequest}{name} || '';
-	my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
-
-	# return error if unknown list
-    my $list = Sympa::List->new($listname, $robot);
-    unless ($list) {
-        $log->syslog('info', 'No such list %s@%s', $listname, $robot);
-		return Sympa::WWW::SOAP11::Error::error("No such list");
-    }
-	
-	# return forbidden if not authorized 
-	# TODO: wer darf das wirklich sehen? listmaster, owner?
-	unless ($list->is_admin('privileged_owner', $sender)
-            || Sympa::is_listmaster($list, $sender)) {
-		$log->syslog('info', 'Inspecting parameters of list %s@%s not allowed for %s', $listname, $robot, $sender);
-		return Sympa::WWW::SOAP11::Error::forbidden()
-	}
-
-	# Save DEBUG
-	open FILE, ">", "/var/tmp/debug.list.txt";
-	print FILE Dumper $list;
-	close FILE;	
-
-	#FIXME: noch lange nicht fertig, viel geändert 
-	#TODO: was brauchen wir wirklich?
-	#TODO: vergl. getList 
-
-	$log->syslog('debug', Dumper $list);
-	
-	# return
-	return { lists => $list };
-}
-
-
-# TODO: noch nicht getestet!
-################################################################################
 # changeEmail
 # Changes a user's email address in Sympa environment
 #    "do_move_user" in wwsympa.fcgi
-################################################################################
+#
 sub changeEmail($$) {
 	my ($server, $in) = @_;
 	
@@ -1288,35 +1238,164 @@ sub changeEmail($$) {
 		return Sympa::WWW::SOAP11::Error::error("Failed to change user email address. Internal error");
     }
 
-	my %result;
+	$log->syslog('debug2', 'SPINDLE: %s', Dumper $spindle);
+
     foreach my $report (@{$spindle->{stash} || []}) {
-		$log->syslog('debug2', Dumper $report);
+		$log->syslog('debug2', 'STASH definiert %s', Dumper $report);
 		#FIXME:  welche Meldungen/Ergebnissse kommen denn hier?
         if ($report->[1] eq 'notice') {
+			$log->syslog('debug2', 'Stash notice');
             #Sympa::WWW::Report::notice_report_web(@{$report}[2, 3],$param->{'action'});
 			return Sympa::WWW::SOAP11::Error::error("Failed to change email address. " . @{$report}[1] . ": " . @{$report}[2]);
         } else {
             #Sympa::WWW::Report::reject_report_web(@{$report}[1 .. 3],$param->{action});
+			$log->syslog('debug2', 'Stash anderes');
 			return Sympa::WWW::SOAP11::Error::error("Failed to change email address. " . @{$report}[1] . ": " . @{$report}[2]);
         }
 
     }
-	#FIXME: auch erfolgreich wenn nichts geändert.
+
+	my %result;
+	#FIXME: unless check not needed, if there is a stash a soap fault is returned above
     unless (@{$spindle->{stash} || []}) {
-		$log->syslog('debug2', Dumper $spindle);
-        #Sympa::WWW::Report::notice_report_web('performed', {},$param->{'action'});
-		$result{'OK'} = { name => "Erfolgreich. FIXME: wsdl muss geändert werden" };
-		$log->syslog('debug2', 'rename erfolgreich %s', '');
+		$log->syslog('info', 'changed email %s to %s', $current_email, $email);
+		$result{ status } = "OK";
+    }
+	
+	$log->syslog('debug2', Dumper \%result);
+	return { result => \%result };
+}
+
+
+
+
+#
+# closeList
+# 	closeList in sympasoap
+# 	close (disable) a list
+#     or/and purge (completely remove) a list
+#
+sub closeList($$) {
+	my ($server, $in) = @_;
+
+	# check auth
+	return Sympa::WWW::SOAP11::Error::unauthorized() 
+	if not checkAuth($in);
+
+	# get parameters
+	my $listname = $in->{closeListRequest}{name} || '';
+	my $mode = $in->{closeListRequest}{mode} || 'close';
+	my $sender                  = $ENV{'USER_EMAIL'};
+    my $robot                   = $ENV{'SYMPA_ROBOT'};
+
+	# return error if unknown list
+    my $list = Sympa::List->new($listname, $robot);
+    unless ($list) {
+        $log->syslog('info', 'No such list %s@%s', $listname, $robot);
+		return Sympa::WWW::SOAP11::Error::error("No such list");
+    }
+	
+	# return forbidden if not authorized 
+	unless ($list->is_admin('owner', $sender)
+            || Sympa::is_listmaster($list, $sender)) {
+		$log->syslog('info', '%s list %s@%s not allowed for %s', $mode, $listname, $robot, $sender);
+		return Sympa::WWW::SOAP11::Error::forbidden()
+	}
+
+    my $spindle = Sympa::Spindle::ProcessRequest->new(
+        context      => $list->{'domain'},
+        action       => 'close_list',
+        current_list => $list,
+        mode => $mode,
+            #(($list->{'admin'}{'status'} eq 'pending') ? 'purge' : 'close'),
+        sender           => $sender,
+        md5_check        => 1,
+        scenario_context => {
+            sender                  => $sender,
+            #remote_host             => $ENV{'REMOTE_HOST'},
+            #remote_addr             => $ENV{'REMOTE_ADDR'},
+            #remote_application_name => $ENV{'remote_application_name'}
+        }
+    );
+
+    unless ($spindle and $spindle->spin) {
+        die SOAP::Fault->faultcode('Server')->faultstring('Internal error');
     }
 
-
-	my @result;
-	foreach my $listen (keys %result) {
-		push @result, $result{$listen};
+	foreach my $report (@{$spindle->{stash} || []}) {
+		my $reason_string = get_reason_string($report, $robot);
+		if ($report->[1] eq 'auth') {
+			$log->syslog('info', '%s list %s@%s not allowed for %s', $mode, $listname, $robot, $sender);
+	        return Sympa::WWW::SOAP11::Error::forbidden();
+		} elsif ($report->[1] eq 'intern') {
+			$log->syslog('err', 'Failed to %s list %s. Internal error', $mode, $listname);
+			return Sympa::WWW::SOAP11::Error::error("Failed to $mode list $listname. Internal error");
+		} elsif ($report->[1] eq 'notice') {
+			$log->syslog('info', '%s list %s success', $mode, $listname);
+	return { status => 'OK' };
+		} elsif ($report->[1] eq 'user') {
+			$log->syslog('err', 'Failed to %s list %s. Undef. %s', $mode, $listname, $reason_string);
+			return Sympa::WWW::SOAP11::Error::error("Failed to $mode list $listname. Undef. $reason_string");
+			next;
+		}
 	}
+
+	# do we reach this point?
+	$log->syslog('info', '%s list %s success', $mode, $listname);
+	return { status => 'OK' };
+}
+
+
+
+
+
+
+
+################################################################################
+# getListDefinition
+# 	get attributes of a list
+#
+################################################################################
+sub getListDefinition($$) {
+	my ($server, $in) = @_;
+
+	# check auth
+	return Sympa::WWW::SOAP11::Error::unauthorized() 
+	if not checkAuth($in);
+
+	# get parameters
+	my $listname = $in->{getListDefinitionRequest}{name} || '';
+	my $sender                  = $ENV{'USER_EMAIL'};
+    my $robot                   = $ENV{'SYMPA_ROBOT'};
+
+	# return error if unknown list
+    my $list = Sympa::List->new($listname, $robot);
+    unless ($list) {
+        $log->syslog('info', 'No such list %s@%s', $listname, $robot);
+		return Sympa::WWW::SOAP11::Error::error("No such list");
+    }
 	
-	$log->syslog('debug2', Dumper \@result);
-	return { lists => \@result };
+	# return forbidden if not authorized 
+	# TODO: wer darf das wirklich sehen? listmaster, owner?
+	unless ($list->is_admin('privileged_owner', $sender)
+            || Sympa::is_listmaster($list, $sender)) {
+		$log->syslog('info', 'Inspecting parameters of list %s@%s not allowed for %s', $listname, $robot, $sender);
+		return Sympa::WWW::SOAP11::Error::forbidden()
+	}
+
+	# Save DEBUG
+	open FILE, ">", "/var/tmp/debug.list.txt";
+	print FILE Dumper $list;
+	close FILE;	
+
+	#FIXME: noch lange nicht fertig, viel geändert 
+	#TODO: was brauchen wir wirklich?
+	#TODO: vergl. getList 
+
+	$log->syslog('debug', Dumper $list);
+	
+	# return
+	return { lists => $list };
 }
 
 

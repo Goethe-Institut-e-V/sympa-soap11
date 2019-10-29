@@ -1269,17 +1269,49 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="lists" minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="result" minOccurs="1" maxOccurs="1">
 					<xsd:complexType>
 						<xsd:sequence>
-							<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
-							<xsd:element name="subscribed" type="xsd:string" minOccurs="0" maxOccurs="1" />
-							<xsd:element name="owner" type="xsd:string" minOccurs="0" maxOccurs="1" />
-							<xsd:element name="editor" type="xsd:string" minOccurs="0" maxOccurs="1" />
-							<xsd:element name="user" type="xsd:string" minOccurs="0" maxOccurs="1" />
+							<xsd:element name="status" type="xsd:string" minOccurs="1" maxOccurs="1" />
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+
+	<xsd:element name="closeListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Close (disable) or purge (completely delete) a list
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list to close/purge</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="mode" type="xsd:string" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>close (default) or purge list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="closeListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list closing.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="status" type="xsd:string" minOccurs="0" maxOccurs="1"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -1337,37 +1369,6 @@
 	<xsd:element name="copyListResponse">
 		<xsd:annotation>
 			<xsd:documentation>Returns status of list creation.</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="status" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-
-
-
-	<xsd:element name="closeListRequest">
-		<xsd:annotation>
-			<xsd:documentation>
-				Close (disable) a list.
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>Name of the list to close</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:element name="closeListResponse">
-		<xsd:annotation>
-			<xsd:documentation>Returns status of list closing.</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>

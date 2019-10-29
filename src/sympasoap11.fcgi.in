@@ -180,16 +180,16 @@ my %callbacks = (
 	getAdmins            => \&Sympa::WWW::SOAP11::getAdmins,
 	addAdmins	         => \&Sympa::WWW::SOAP11::addAdmins,
 	delAdmins    	     => \&Sympa::WWW::SOAP11::delAdmins,
-
-
 	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
+	closeList			 => \&Sympa::WWW::SOAP11::closeList,
+
+
+
 
 	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
 
 #	, setListDefinition			 => \&Sympa::WWW::SOAP11::List::setListDefinition
 #	, copyList			 => \&Sympa::WWW::SOAP11::List::copyList
-#	, closeList			 => \&Sympa::WWW::SOAP11::List::closeList
-#	, purgeList			 => \&Sympa::WWW::SOAP11::List::purgeList
 #	, getFooter			 => \&Sympa::WWW::SOAP11::List::getFooter
 #	, getHeader			 => \&Sympa::WWW::SOAP11::List::getHeader
 #	, getInfo			 => \&Sympa::WWW::SOAP11::List::getInfo
