@@ -1,0 +1,3587 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:sch="http://listen.goethe.de/schemas/sympa" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://listen.goethe.de/schemas/sympa" targetNamespace="http://listen.goethe.de/schemas/sympa">
+  <wsdl:types>
+    <xsd:schema xmlns:sym="http://listen.goethe.de/schemas/sympa" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://listen.goethe.de/schemas/sympa">
+	<xsd:annotation>
+		<xsd:documentation>
+			This schema describes the Sympa SOAP11 webservice developed at Goethe-Institut e.V.
+		</xsd:documentation>
+	</xsd:annotation>
+
+
+	<!-- Simple Types ========================================================= -->
+
+	<xsd:simpleType name="EmailType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Email Address type with simple constraint.
+				The backend system may perform stricter syntax checks.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value=".+@.+"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="IsoLanguageType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Language in ISO 2-4 character format (ISO-639-1 plus optional variant ISO 3166-1-Alpha-2 code elements), i.e. "de" or "pt-BR"
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[a-z]{2}(-[A-Z][A-Z])?"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="NotEmptyStringType">
+		<xsd:annotation>
+			<xsd:documentation>
+				String constraint allowing empty strings.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="UserVisibilityType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.
+				If this parameter is not declared, the subscriber will be visible for REVIEW.
+				Note: this option does not affect the results of a REVIEW command issued by an owner.
+				Default value: conceal
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="">
+				<xsd:annotation>
+					<xsd:documentation>
+						FIXME: leeren string  entfernen Default value: noconceal
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="conceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						verborgen (conceal)
+						Puts the subscriber in conceal mode for the list. The subscriber will then become invisible during REVIEW on this list.
+						Only owners will see the whole subscriber list.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="noconceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						Übersicht auf der Seite für Listen-Berichte (noconceal)
+						Puts the subscriber in noconceal mode (default) for the list. The subscriber will then become visible during REVIEW of this list.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="SubscriberReceptionType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Empfangsmodus (reception)
+				Reception mode of a list
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="digest">
+				<xsd:annotation>
+					<xsd:documentation>
+						Auswahl im MIME-Format (digest)
+						Instead of receiving email from the list in a normal manner, the subscriber will periodically receive it in a digest.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="digestplain">
+				<xsd:annotation>
+					<xsd:documentation>
+						Auswahl im Reintext-Format (digestplain)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="nomail">
+				<xsd:annotation>
+					<xsd:documentation>
+						no mail (nomail)
+						This mode is used when a subscriber no longer wants to receive email from the list, but nevertheless wishes to retain the possibility of posting to the list. This mode therefore prevents the subscriber from unsubscribing and subscribing later on.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="mail">
+				<xsd:annotation>
+					<xsd:documentation>
+						standard (direkter Empfang) (mail)
+						Puts the subscriber in normal mode (default) for the listname list. This option is mainly used to cancel the nomail, summary or digest modes. If the subscriber was in nomail mode, he or she will receive email from the list in a normal manner again.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="summary">
+				<xsd:annotation>
+					<xsd:documentation>
+						Zusammenfassungs-Modus (summary)
+						Instead of receiving email from the list in a normal manner, the subscriber will periodically receive the list of messages. This mode is very close to the DIGEST reception mode, but the subscriber only receives the list of messages.
+						This option is available only if the digest mode is set.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="notice">
+				<xsd:annotation>
+					<xsd:documentation>
+						Benachrichtigungsmodus (notice)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txt">
+				<xsd:annotation>
+					<xsd:documentation>
+						Nur-Text-Modus (txt)
+						This mode is used when a subscriber wishes to receive emails sent in both format, txt/html and txt/plain only, in txt/plain format.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="html">
+				<xsd:annotation>
+					<xsd:documentation>
+						Nur-HTML-Modus (html)
+						This mode is used when a subscriber wishes to receive emails sent in both format, txt/html and txt/plain only, in txt/html format.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="urlize">
+				<xsd:annotation>
+					<xsd:documentation>
+						URL-Modus (urlize)
+						This mode is used when a subscriber wishes not to receive attached files. The attached files are replaced by a URL leading to the file stored on the list site.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="not_me">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sie empfangen Ihre eigenen Nachrichten nicht (not_me)
+						This mode is used when a subscriber wishes not to receive back the message that he/she has sent to the list.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="ListnameType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Listname constraint, see Sympa tools.pm line 60, %regexp for listname
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[a-z0-9][a-z0-9\-\.\+_]{0,49}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="AdminVisibility">
+		<xsd:annotation>
+			<xsd:documentation>
+				Visibility in list menu (GUI)
+				default: noconceal
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="noconceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						listed on the list menu
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="conceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						concealed from list menu
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="AdminReceptionType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Reception mode for list notifications
+				default: mail
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="mail">
+				<xsd:annotation>
+					<xsd:documentation>
+						receive notification email
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="nomail">
+				<xsd:annotation>
+					<xsd:documentation>
+						no notifications
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="ProfileType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Profile of the owner role
+				See https://www.sympa.org/manual/organization
+				default: normal
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="normal">
+				<xsd:annotation>
+					<xsd:documentation>
+						(Basic) list owners
+						They are responsible for managing the members of the list, editing the list configuration and templates.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privileged">
+				<xsd:annotation>
+					<xsd:documentation>
+						Privileged list owners
+						The first defined privileged owner is the person who requested the list creation.
+						They inherit (basic) owner privileges and are also responsible for managing the list owners and editors themselves (through the web interface).
+						Privileged owners have extended privileges, including the right to edit some list configuration parameters.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="RoleType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Role a admin can have in a list
+				See https://www.sympa.org/manual/organization
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>
+						They are responsible for managing the members of the list, editing the list configuration and templates.
+						See OwnerType for different kinds (profiles) of owners.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="editor">
+				<xsd:annotation>
+					<xsd:documentation>
+						Moderators (also called Editors)
+						Moderators are responsible for the messages distributed in the mailing list (as opposed to owners who look after list members). Moderators are active if the list has been setup as a moderated mailing list.
+						If no moderator is defined for the list, then list owners will inherit the moderator role.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<!-- FIXME: in create only above 2 values posible -->
+			<xsd:enumeration value="actual_editor">
+				<xsd:annotation>
+					<xsd:documentation>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privileged_owner">
+				<xsd:annotation>
+					<xsd:documentation>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="receptive_editor">
+				<xsd:annotation>
+					<xsd:documentation>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="receptive_owner">
+				<xsd:annotation>
+					<xsd:documentation>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+ 
+
+	<!-- Complex Types ======================================================== -->
+
+	<xsd:complexType name="SubscriberType">
+		<xsd:annotation>
+			<xsd:documentation>This type fits the Sympa Subscriber Object</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+				<xsd:annotation>
+					<xsd:documentation>Email address of the subscriber.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="gecos" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Information about the subscriber (last name, first name, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="subscribed" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation>is user subscribed</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="included" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation>is user included from other source</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="bounce" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>bounces this email address has</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="visibility" type="sym:UserVisibilityType">
+				<xsd:annotation>
+					<xsd:documentation>Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="date" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="startdate" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="custom_attribute" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="bounce_score" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="bounce_address" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="enddate" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="id" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="reception" type="sym:SubscriberReceptionType">
+				<xsd:annotation>
+					<xsd:documentation>Special delivery modes which the subscriber may select.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="topics" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="suspend" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="update_date" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="number_messages" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<!--
+				next elements are only part of the subscriber object
+				if inserted with $list->parse_list_member_bounce($subscriber); call
+			-->
+			<xsd:element maxOccurs="1" minOccurs="0" name="first_bounce" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="last_bounce" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="bounce_count" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="bounce_class" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="bounce_level" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="AdminType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+				<xsd:annotation>
+					<xsd:documentation>Email address of the admin.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="gecos" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Information about the admin (last name, first name, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="visibility" type="sym:AdminVisibility">
+				<xsd:annotation>
+					<xsd:documentation>Visibility in list menu (GUI)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="reception" type="sym:AdminReceptionType">
+				<xsd:annotation>
+					<xsd:documentation>Reception mode for list notifications</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="profile" type="sym:ProfileType">
+				<xsd:annotation>
+					<xsd:documentation>Profile of the owner role</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="info" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Private information</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="date" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="update_date" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="id" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="role" type="sym:RoleType">
+				<xsd:annotation>
+					<xsd:documentation>admin role</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="subscribed" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation>
+						is admin subscribed
+						Note: getSubscriptions/getSubscriber return real subscribers
+						an admin may be "effective" subscribed
+					</xsd:documentation>
+					</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="included" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation>is admin included from other source</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+ 
+
+	<xsd:complexType name="ListType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Name of the list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="domain" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Domain name of the list, default is the robot domain name set in the related robot.conf file or in file /etc/sympa.conf.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="listAddress" type="sym:EmailType">
+				<xsd:annotation>
+					<xsd:documentation>email address of the list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="subject" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>This parameter indicates the subject of the list, which is sent in response to the LISTS mail command. The subject is a free form text limited to one line.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="description" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Detailed text description of the list, to be displayed by the INFO command. It can also be referenced from template files for service messages.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="visibility" type="sym:ListVisibilityType">
+				<xsd:annotation>
+					<xsd:documentation>This parameter indicates whether the list should feature in the output generated in response to a LISTS command.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="status" type="sym:ListStatusType">
+				<xsd:annotation>
+					<xsd:documentation>Status of the list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="lang" type="sym:IsoLanguageType">
+				<xsd:annotation>
+					<xsd:documentation>This parameter defines the language used for the list. It is used to initialize a user's language preference; Sympa command reports are extracted from the associated message catalog.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="homepage" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>URL of the list (Sympa Web GUI)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="topic" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>This parameter allows the classification of lists. You may define multiple topics as well as hierarchical ones. WWSympa's list of public lists uses this parameter.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="subscriberCount" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>Total subscribers of the list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="msgCount" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>Number of messages sent (to the list)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="msgCountXRecipients" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>Number of messages times number of recipients</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="latestDistributionDate" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Last date of distribution message</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<!-- Requests/Responses =================================================== -->
+
+	<xsd:element name="getVersionRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests versions of the Sympa service components.
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="getVersionResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns versions of the Sympa service components.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="sympa" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Version of the Sympa software</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="soap" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Version of the SOAP11 service</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+ 
+
+	<xsd:element name="getRobotsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests all robots (Domains) of this Sympa instance.
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="getRobotsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all robots (Domains) from this Sympa instance.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="robot" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="getListTemplatesRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests all list templates from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="getListTemplatesResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all list templates from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="templates">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="title" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="comment" type="xsd:string"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="getListsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests all list names from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="list" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Return list details for this %list% pattern. Or for all lists if not specified.
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="topic" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Return only lists with this topic.
+							Use 'topicsless' to select lists without topic.
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!--
+				<xsd:element name="subtopic" type="xsd:string" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Return only lists with this subtopic.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				-->
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getListsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all list names from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="list" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="getListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests list details from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="list" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							Return list details for this list. Or for all lists if list is not specified.
+					</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getListResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns list details from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="list" type="sym:ListType"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="createListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Creates a new list in the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListnameType">
+					<xsd:annotation>
+						<xsd:documentation>The name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="subject" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>The subject of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="template" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>The template to use creating the new list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="description" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>A short description for the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element default="" maxOccurs="1" minOccurs="0" name="topics" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>A topic for the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="lang" type="sym:IsoLanguageType">
+					<xsd:annotation>
+						<xsd:documentation>The language of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="createListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list creation.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="getSubscribersRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests (all) subscribers of a lists.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to query</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getSubscribersResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns (all) subscribers and parameters of each subscriber of a lists.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="subscribers" type="sym:SubscriberType"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="addSubscriberRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Add subscriber(s) to a list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to subscribe to</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+								<xsd:annotation>
+									<xsd:documentation>User (= email address) to add</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:element maxOccurs="1" minOccurs="0" name="gecos" type="xsd:string">
+								<xsd:annotation>
+									<xsd:documentation>Short description of the user</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="quiet" type="xsd:boolean">
+					<xsd:annotation>
+						<xsd:documentation>
+							Silently add users.
+							No welcome message is send to new users.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="addSubscriberResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of subscription and parameters for each new user (subscriber).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="result">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="subscribed" type="xsd:integer"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="failed" type="xsd:integer"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+ 
+ 
+
+	<xsd:element name="delSubscriberRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Removes subscriber(s) from list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to remove users from</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="quiet" type="xsd:boolean">
+					<xsd:annotation>
+						<xsd:documentation>
+							Silently unsubscribe users.
+							No good bye message is send to users.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+								<xsd:annotation>
+									<xsd:documentation>User (= email address) to unsubscribe</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="delSubscriberResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of removal for each subscriber.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="result">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="unsubscribed" type="xsd:integer"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="failed" type="xsd:integer"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="getSubscriptionsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Get lists where user is subscribed to or admin.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+					<xsd:annotation>
+						<xsd:documentation>User (= email address) to search</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getSubscriptionsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns lists where user is subscribed to and status of user in each list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="list">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="address" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="subject" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="owner" type="xsd:boolean"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="editor" type="xsd:boolean"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="subscribed" type="xsd:boolean"/>
+							<xsd:element maxOccurs="1" minOccurs="0" name="subscriber" type="sym:SubscriberType"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+ 
+
+
+	<xsd:element name="getAdminsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests admins of a list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to query</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="role" type="sym:RoleType">
+					<xsd:annotation>
+						<xsd:documentation>Admin type</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getAdminsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all admins (with specified role) and parameters of each admin of a list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="admin" type="sym:AdminType"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="addAdminsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Add owner(s) to list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to add admins to</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="role" type="sym:RoleType">
+					<xsd:annotation>
+						<xsd:documentation>Role the new admins should have</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<!-- FISME: besser einfach email? -->
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="admin" type="sym:AdminType">
+					<xsd:annotation>
+						<xsd:documentation>Admins to add</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="addAdminsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of addition and parameters for each new owner.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="result">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="added" type="xsd:integer"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="failed" type="xsd:integer"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="admin">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType"/>
+							<xsd:element maxOccurs="1" minOccurs="0" name="admin" type="sym:AdminType"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+	<xsd:element name="delAdminsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Remove owner from list.
+				Note: one owner is mandatory
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to remove owner from</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="role" type="sym:RoleType">
+					<xsd:annotation>
+						<xsd:documentation>Role the new admins should have</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="email" type="sym:EmailType">
+					<xsd:annotation>
+						<xsd:documentation>User (= email address) to delete as owner</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="delAdminsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of removal.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="result">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="deleted" type="xsd:integer"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="failed" type="xsd:integer"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="admin">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+
+
+<!-- bis hier erledigt --> 
+	<xsd:element name="getTopicsRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests all list topics from the Sympa robot.
+ 			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="getTopicsResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all list topics and the parameters of each topic including subtopics from the Sympa robot.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="topics" type="sym:TopicType"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+ 
+
+	<xsd:element name="copyListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Creates a new list as empty copy of another list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListnameType">
+					<xsd:annotation>
+						<xsd:documentation>The name of the list to copy</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="newname" type="sym:ListnameType">
+					<xsd:annotation>
+						<xsd:documentation>The name of the new list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="copyListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list creation.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+
+	<xsd:element name="closeListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Close (disable) a list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list to close</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="closeListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list closing.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+
+	<xsd:element name="purgeListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Completely remove a (closed) list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list to remove</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="purgeListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list removal.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+ 
+
+	<xsd:element name="changeEmailRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Change email (= user) in all lists.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="old" type="sym:EmailType">
+					<xsd:annotation>
+						<xsd:documentation>email to change</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="new" type="sym:EmailType">
+					<xsd:annotation>
+						<xsd:documentation>New email address</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="changeEmailResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all lists where the email was changed and status of user in each list.
+ 			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="lists">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="0" name="subscribed" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="0" name="owner" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="0" name="editor" type="xsd:string"/>
+							<xsd:element maxOccurs="1" minOccurs="0" name="user" type="xsd:string"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+
+	
+	<xsd:element name="getFooterRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests the footer of a list.
+				Nachrichtenfuß: Wenn diese Datei nicht leer ist, wird sie am Ende jeder auf der Liste verteilten Nachricht angehängt.
+				Als MIME-Attachment wenn "Footer-Typ" mime ist.
+				Als Ergänzung des Mailtextes, wenn "Footer-Typ" attach ist und beide gleich codiert sind (z.B. utf8).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getFooterResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns the footer or error if footer is not defined.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="content" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	
+	<xsd:element name="setFooterRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Set the footer of a list.
+				Nachrichtenfuß: Wenn diese Datei nicht leer ist, wird sie am Ende jeder auf der Liste verteilten Nachricht angehängt.
+				Als MIME-Attachment wenn "Footer-Typ" mime ist.
+				Als Ergänzung des Mailtextes, wenn "Footer-Typ" attach ist und beide gleich codiert sind (z.B. utf8).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="content" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>New footer</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="setFooterResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns nothing or additional status information.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	
+
+
+	
+	<xsd:element name="getHeaderRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests the header of a list.
+				Nachrichtenkopf: Wenn diese Datei nicht leer ist, wird sie an den Anfang jeder auf der Liste verteilten Nachricht gestellt.
+				Als MIME-Attachment wenn "Footer-Typ" mime ist.
+				Als Ergänzung des Mailtextes, wenn "Footer-Typ" attach ist und beide gleich codiert sind (z.B. utf8).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getHeaderResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns the header or error if header is not defined.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="content" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+	<xsd:element name="setHeaderRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Sets the header of a list.
+				Nachrichtenkopf: Wenn diese Datei nicht leer ist, wird sie an den Anfang jeder auf der Liste verteilten Nachricht gestellt.
+				Als MIME-Attachment wenn "Footer-Typ" mime ist.
+				Als Ergänzung des Mailtextes, wenn "Footer-Typ" attach ist und beide gleich codiert sind (z.B. utf8).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="content" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>New header</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="setHeaderResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns nothing or additional status information.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
+
+	
+	<xsd:element name="getInfoRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests the info of a list.
+				Listenbeschreibung: Dieser Text wird als Antwort auf den E-Mail-Befehl INFO versandt. Er erscheint auch in der Willkommensnachricht.
+				Er wird schon beim Anlegen einer Liste definiert.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getInfoResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns the info or error if info is not defined.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="content" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	
+	<xsd:element name="setInfoRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Sets the info of a list.
+				Listenbeschreibung: Dieser Text wird als Antwort auf den E-Mail-Befehl INFO versandt. Er erscheint auch in der Willkommensnachricht.
+				Er wird schon beim Anlegen einer Liste definiert.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="content" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>New description</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="setInfoResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns nothing or additional status information.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+
+	
+	
+	
+	<xsd:element name="getListDefinitionRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Requests the attributes of a list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to query</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="getListDefinitionResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns the lists parameters.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="lists" type="sym:SympaListType"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+
+	
+	<xsd:element name="setListDefinitionRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Sets attributes of a list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to modify</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="admin" type="sym:SetSympaListAdminType">
+					<xsd:annotation>
+						<xsd:documentation>List attributes</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="setListDefinitionResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns current lists parameters.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="lists" type="sym:SympaListType"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>	
+	
+
+<!-- ################################################## -->
+
+	<xsd:complexType name="SympaListType">
+		<xsd:annotation>
+			<xsd:documentation>Excerpt from Sympa $list object</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Name of the list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="subscribers" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>Total subscribers of the list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="domain" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Domain name of the list, default is the robot domain name set in the related robot.conf file or in file /etc/sympa.conf.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="4" minOccurs="1" name="stats" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>
+					The $list object contains only the first 4 values from the stats file.
+					/home/sympa/list_data/mylist/stats is a text file containing statistics about the list.
+					e.g. 1 5 619 3095 5 0 1400593718
+					Data are numerics separated by white space within a single line:
+						number of messages sent, used to generate X-sequence headers;
+						number of messages X number of recipients;
+						number of bytes X number of messages;
+						number of bytes X number of messages X number of recipients;
+						number of subscribers;
+						last update date (epoch format) of the subscribers cache in DB, used by lists in include2 mode only.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="admin" type="sym:SympaListAdminType">
+				<xsd:annotation>
+					<xsd:documentation>List definition</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="SympaListAdminType">
+		<xsd:annotation>
+			<xsd:documentation>Excerpt from Admin Part of Sympa $list object</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="serial" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>
+						Seriennummer der Listenkonfiguration (serial)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="status" type="sym:ListStatusType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Status der Liste (status)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="subject" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Thema der Liste (subject)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="custom_subject" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Titelmarkierung (custom_subject)
+						Wird dem Subject einer Mail in [] vorangestellt
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="topics" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Themengebiete der Liste (topics)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="lang" type="sym:IsoLanguageType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sprache der Liste (lang)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="footer_type" type="sym:ListFooterType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wie sollen zusätzliche Texte im Kopf und Fuß untergebracht werden (footer_type)
+						Nur append fügt so ein, das bei Text(!)mails es ein Mailkörper mit integriertem Kopf/Fußteil wird.
+						Ist die Mail nicht in der selben Kodierung wie die Kopf/Fußtexte dann schlägt append fehl. Also am besten beides in UTF8 verfassen.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="merge_feature" type="sym:OnOffType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Nachrichten-Personalisierung zulassen (merge_feature)
+						Dies kann zu Problemen (zwerschossene Mails) führen, falls Mails ungewollt die genutzte Merge Markup enthalten.
+						Default: off
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="max_size" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>
+						Maximale Nachrichtengröße (max_size) in Byte
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="priority" type="sym:PriorityType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Priorität (priority) 
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="available_user_options">
+				<xsd:annotation>
+					<xsd:documentation>
+						Verfügbare Abonnement-Optionen (available_user_options)
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="reception" type="sym:SubscriberReceptionType">
+							<xsd:annotation>
+								<xsd:documentation>
+									Empfangsmodus (reception)
+									Begrenzt die Wahlmöglichkeit der Subscriber
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="default_user_options">
+				<xsd:annotation>
+					<xsd:documentation>
+						Abonnementprofil (default_user_options)
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="visibility" type="sym:UserVisibilityType">
+							<xsd:annotation>
+								<xsd:documentation>
+									Sichtbarkeit des Subscribers (visibility)
+									Default für Subscriber
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="1" name="reception" type="sym:SubscriberReceptionType">
+							<xsd:annotation>
+								<xsd:documentation>
+									Empfangsmodus (reception)
+									Default für Subscriber
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="visibility">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sichtbarkeit der Liste (visibility)
+						default: conceal
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListVisibilityType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="send">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Nachrichten senden (send)
+						default: private
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListSendType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="info">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Listen-Information ansehen (info)
+						default: open
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListInfoType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="subscribe">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann die Liste abonnieren (subscribe)
+						default: open
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListSubscribeType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="add">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Abonnenten hinzufügen (add)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListAddType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="unsubscribe">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann abbestellen (unsubscribe)
+						default: open
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListUnsubscribeType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="del">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Abonnenten löschen (del)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListDelType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="invite">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Personen einladen (invite)
+						default: private
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListInviteType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="remind">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Erinnerungen veranlassen (remind)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListRemindType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="review">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Abonnenten auflisten (review)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListReviewType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="1" name="owner" type="sym:AdminType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Eigentümer
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="editor" type="sym:AdminType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Moderatoren
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="SetSympaListAdminType">
+		<xsd:annotation>
+			<xsd:documentation>Writable excerpt from Admin Part of Sympa $list object</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" name="subject" type="sym:NotEmptyStringType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Thema der Liste (subject)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="custom_subject" type="sym:NotEmptyStringType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Titelmarkierung (custom_subject)
+						Wird dem Subject einer Mail in [] vorangestellt
+						Default: Listname
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="topics" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Themengebiete der Liste (topics)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="lang" type="sym:IsoLanguageType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sprache der Liste (lang)
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="footer_type" type="sym:ListFooterType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wie sollen zusätzliche Texte im Kopf und Fuß untergebracht werden (footer_type)
+						Nur append fügt so ein, das bei Text(!)mails es ein Mailkörper mit integriertem Kopf/Fußteil wird.
+						Ist die Mail nicht in der selben Kodierung wie die Kopf/Fußtexte dann schlägt append fehl. Also am besten beides in UTF8 verfassen.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="merge_feature" type="sym:OnOffType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Nachrichten-Personalisierung zulassen (merge_feature)
+						Dies kann zu Problemen (zwerschossene Mails) führen, falls Mails ungewollt die genutzte Merge Markup enthalten.
+						Default: off
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="max_size" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>
+						Maximale Nachrichtengröße (max_size) in Byte
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="priority" type="sym:PriorityType">
+				<xsd:annotation>
+					<xsd:documentation>
+						Priorität (priority) 
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="available_user_options">
+				<xsd:annotation>
+					<xsd:documentation>
+						Verfügbare Abonnement-Optionen (available_user_options)
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="10" minOccurs="1" name="reception" type="sym:SubscriberReceptionType">
+							<xsd:annotation>
+								<xsd:documentation>
+									Empfangsmodus (reception)
+									Begrenzt die Wahlmöglichkeit der Subscriber
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="default_user_options">
+				<xsd:annotation>
+					<xsd:documentation>
+						Abonnementprofil (default_user_options)
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="0" name="visibility" type="sym:UserVisibilityType">
+							<xsd:annotation>
+								<xsd:documentation>
+									Sichtbarkeit des Subscribers (visibility)
+									Default für Subscriber
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element maxOccurs="1" minOccurs="0" name="reception" type="sym:SubscriberReceptionType">
+							<xsd:annotation>
+								<xsd:documentation>
+									Empfangsmodus (reception)
+									Default für Subscriber
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="visibility">
+				<xsd:annotation>
+					<xsd:documentation>
+						Sichtbarkeit der Liste (visibility)
+						default: conceal
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListVisibilityType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="send">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Nachrichten senden (send)
+						default: private
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListSendType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="info">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Listen-Information ansehen (info)
+						default: open
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListInfoType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="subscribe">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann die Liste abonnieren (subscribe)
+						default: open
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListSubscribeType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="add">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Abonnenten hinzufügen (add)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListAddType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="unsubscribe">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann abbestellen (unsubscribe)
+						default: open
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListUnsubscribeType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="del">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Abonnenten löschen (del)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListDelType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="invite">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Personen einladen (invite)
+						default: private
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListInviteType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="remind">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Erinnerungen veranlassen (remind)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListRemindType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="review">
+				<xsd:annotation>
+					<xsd:documentation>
+						Wer kann Abonnenten auflisten (review)
+						default: owner
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListReviewType">
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	
+	
+	<xsd:simpleType name="ListInfoType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Listen-Information ansehen (info)
+				default: open
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: open</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="conceal">
+				<xsd:annotation>
+					<xsd:documentation>restricted to subscribers - Silent rejection otherwise.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open">
+				<xsd:annotation>
+					<xsd:documentation>jeder</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="private">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+	
+	<xsd:simpleType name="ListSubscribeType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann die Liste abonnieren (subscribe)
+				default: open
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: open</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="auth">
+				<xsd:annotation>
+					<xsd:documentation>Abonnement-Anfrage bestätigt</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="auth_notify">
+				<xsd:annotation>
+					<xsd:documentation>Anmeldung erforderlich (Eigentümer wird benachrichtigt)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="auth_owner">
+				<xsd:annotation>
+					<xsd:documentation>Anmeldung erforderlich, dann Bestätigung durch den Eigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>Abonnieren nicht möglich</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranet">
+				<xsd:annotation>
+					<xsd:documentation>lokale Abonnenten oder lokale Domäne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranetorowner">
+				<xsd:annotation>
+					<xsd:documentation>nur für Benutzer der lokalen Domäne oder nach Bestätigung durch den Eigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open">
+				<xsd:annotation>
+					<xsd:documentation>jeder ohne Anmeldung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open_notify">
+				<xsd:annotation>
+					<xsd:documentation>jeder, Listeneigentümer wird benachrichtigt</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open_quiet">
+				<xsd:annotation>
+					<xsd:documentation>jeder, keine Begrüßungs-E-Mail</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>Bestätigung durch Eigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="smime">
+				<xsd:annotation>
+					<xsd:documentation>muss mit S/MIME signiert sein</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="smimeorowner">
+				<xsd:annotation>
+					<xsd:documentation>erfordert S/MIME-Signatur oder Bestätigung durch den Eigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListAddType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Abonnenten hinzufügen (add)
+				default: owner
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: owner</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="auth">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf angemeldete Eigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>Hinzufügen nicht möglich</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>Das Hinzufügen durch Listeneigentümer erfordert keine Anmeldung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner_notify">
+				<xsd:annotation>
+					<xsd:documentation>Hinzufügen durch den Listeneigentümer erfordert keine Anmeldung (Benachrichtigung)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListUnsubscribeType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann abbestellen (unsubscribe)
+				default: open
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: open</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="auth">
+				<xsd:annotation>
+					<xsd:documentation>Anmeldung erforderlich</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>unmöglich</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open">
+				<xsd:annotation>
+					<xsd:documentation>offen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open_notify">
+				<xsd:annotation>
+					<xsd:documentation>offen nach Bestätigungs-E-Mail, Eigentümer wird benachrichtigt</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>Bestätigung durch Eigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListDelType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Abonnenten löschen (del)
+				default: owner
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: owner</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="auth">
+				<xsd:annotation>
+					<xsd:documentation>Löschen nur durch den angemeldeten Listeneigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>Abmelden von Abonnenten nicht möglich</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>durch Eigentümer ohne Anmeldung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner_notify">
+				<xsd:annotation>
+					<xsd:documentation>Listeneigentümer, Anmeldung nicht erforderlich (Benachrichtigung)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListInviteType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Personen einladen (invite)
+				default: private
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: private</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>geschlossen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>Einladung durch Listeneigentümer erfordert keine Anmeldung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="private">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="öffentlich">
+				<xsd:annotation>
+					<xsd:documentation>public</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+	
+	<xsd:simpleType name="ListRemindType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Erinnerungen veranlassen (remind)
+				default: owner
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: owner</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="listmaster">
+				<xsd:annotation>
+					<xsd:documentation>nur Listenadministrator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Listeneigentümer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListReviewType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Abonnenten auflisten (review)
+				default: owner
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: owner</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>niemand darf die Benutzer auflisten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranet">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten oder Benutzer der lokalen Domäne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="listmaster">
+				<xsd:annotation>
+					<xsd:documentation>nur Listenadministrator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>nur Listeneigentümer (und Listenadministrator)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="private">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="public">
+				<xsd:annotation>
+					<xsd:documentation>jeder</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListStatusType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Status der Liste (status)
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>closed list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="error_config">
+				<xsd:annotation>
+					<xsd:documentation>erroneous configuration</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="family_closed">
+				<xsd:annotation>
+					<xsd:documentation>closed family instance</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open">
+				<xsd:annotation>
+					<xsd:documentation>in operation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="pending">
+				<xsd:annotation>
+					<xsd:documentation>list not yet activated</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListSendType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wer kann Nachrichten senden (send)
+				default: private
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: private</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>geschlossen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="confidential">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="editorkey">
+				<xsd:annotation>
+					<xsd:documentation>Moderiert</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="editorkeyonly">
+				<xsd:annotation>
+					<xsd:documentation>Moderiert, auch für Moderatoren</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="editorkeyonlyauth">
+				<xsd:annotation>
+					<xsd:documentation>Moderiert, für Moderatoren ist eine Anmeldung erforderlich.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranet">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf die lokale Domäne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranetorprivate">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf die lokale Domäne und Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="newsletter">
+				<xsd:annotation>
+					<xsd:documentation>Newsletter, beschränkt auf Moderatoren</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="newsletterkeyonly">
+				<xsd:annotation>
+					<xsd:documentation>Newsletter, beschränkt auf Moderatoren nach Bestätigung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="private">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="private_smime">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten mit gültiger S/MIME-Signatur</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privateandeditorkey">
+				<xsd:annotation>
+					<xsd:documentation>Moderiert, beschränkt auf Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privateandnomultipartoreditorkey">
+				<xsd:annotation>
+					<xsd:documentation>Moderiert für Nicht-Abonnenten, die mehrteilige Nachrichten senden</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privatekey">
+				<xsd:annotation>
+					<xsd:documentation>beschränkt auf Abonnenten mit vorheriger MD5-Legitimierung</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privatekeyandeditorkeyonly">
+				<xsd:annotation>
+					<xsd:documentation>Moderiert, für Abonnenten sowie Moderatoren</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privateoreditorkey">
+				<xsd:annotation>
+					<xsd:documentation>Privat, moderiert für Nicht-Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="privateorpublickey">
+				<xsd:annotation>
+					<xsd:documentation>Privat, Bestätigung für Nicht-Abonnenten</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="public">
+				<xsd:annotation>
+					<xsd:documentation>Öffentliche Liste</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="public_nobcc">
+				<xsd:annotation>
+					<xsd:documentation>Öffentliche Liste, Bcc verwerfen (Anti-Spam)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="publickey">
+				<xsd:annotation>
+					<xsd:documentation>öffentlich; erfordert keine Anmeldung wenn die DKIM-Signatur gültig ist</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="publicnoattachment">
+				<xsd:annotation>
+					<xsd:documentation>öffentliche Liste, mehrteilige Nachrichten werden an den Moderator gesendet</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="publicnomultipart">
+				<xsd:annotation>
+					<xsd:documentation>öffentliche Liste, mehrteilige Nachrichten werden verworfen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+	<xsd:simpleType name="ListFooterType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Wie sollen zusätzliche Texte im Kopf und Fuß untergebracht werden (footer_type)
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="mime">
+				<xsd:annotation>
+					<xsd:documentation>add a new MIME part (mime)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="append">
+				<xsd:annotation>
+					<xsd:documentation>append to message body (append)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+
+	<!--
+	<xsd:simpleType name="">
+		<xsd:annotation>
+			<xsd:documentation>
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="default">
+				<xsd:annotation>
+					<xsd:documentation>default: open</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="">
+				<xsd:annotation>
+					<xsd:documentation></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="">
+				<xsd:annotation>
+					<xsd:documentation></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="">
+				<xsd:annotation>
+					<xsd:documentation></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="">
+				<xsd:annotation>
+					<xsd:documentation></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+-->	
+	
+	<xsd:simpleType name="OnOffType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Funktion ist an oder aus
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="off">
+				<xsd:annotation>
+					<xsd:documentation>disabled (off)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="on">
+				<xsd:annotation>
+					<xsd:documentation>enabled (on)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+	
+
+	
+	
+	
+	<xsd:simpleType name="PriorityType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Priority constraint
+				0 - highest priority
+				5 - default priority
+				9 - lowest priority
+				z - queue messages only
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[z0-9]{1}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	
+
+
+	<xsd:simpleType name="ListVisibilityType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Sichtbarkeit der Liste
+				This parameter indicates whether the list should feature in the output generated in response to a LISTS command.
+				default: conceal
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="conceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						nur für Abonnenten sichtbar
+						conceal except for subscribers
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="noconceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						sichtbar
+						no conceal
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranet">
+				<xsd:annotation>
+					<xsd:documentation>
+						Intranet-Zugang
+						intranet access
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="secret">
+				<xsd:annotation>
+					<xsd:documentation>
+						unsichtbar - sogar für Abonnenten
+						conceal even for subscribers
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+
+
+
+
+
+
+	<xsd:complexType name="BounceType">
+		<xsd:annotation>
+			<xsd:documentation>Information on email bounces</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="count" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>Number of bounces</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="code" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="lastDate" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>date of last bounce</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="firstDate" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>date of first bounce</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+
+
+	<xsd:complexType name="TopicType">
+		<xsd:annotation>
+			<xsd:documentation>Topics</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Topic</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="title" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Short description</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="visibility" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>is visible</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="subtopics" type="sym:SubTopicType">
+				<xsd:annotation>
+					<xsd:documentation>Subtopics</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+
+
+	<xsd:complexType name="SubTopicType">
+		<xsd:annotation>
+			<xsd:documentation>Subtopics</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Subtopic</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="title" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Short description</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+    
+
+</xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="getRobotsRequest">
+    <wsdl:part element="sch:getRobotsRequest" name="getRobotsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSubscriptionsRequest">
+    <wsdl:part element="sch:getSubscriptionsRequest" name="getSubscriptionsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getFooterResponse">
+    <wsdl:part element="sch:getFooterResponse" name="getFooterResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getTopicsRequest">
+    <wsdl:part element="sch:getTopicsRequest" name="getTopicsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListDefinitionResponse">
+    <wsdl:part element="sch:getListDefinitionResponse" name="getListDefinitionResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="copyListResponse">
+    <wsdl:part element="sch:copyListResponse" name="copyListResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeEmailResponse">
+    <wsdl:part element="sch:changeEmailResponse" name="changeEmailResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="delAdminsResponse">
+    <wsdl:part element="sch:delAdminsResponse" name="delAdminsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListsResponse">
+    <wsdl:part element="sch:getListsResponse" name="getListsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addAdminsRequest">
+    <wsdl:part element="sch:addAdminsRequest" name="addAdminsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setFooterResponse">
+    <wsdl:part element="sch:setFooterResponse" name="setFooterResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createListResponse">
+    <wsdl:part element="sch:createListResponse" name="createListResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListTemplatesResponse">
+    <wsdl:part element="sch:getListTemplatesResponse" name="getListTemplatesResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="closeListRequest">
+    <wsdl:part element="sch:closeListRequest" name="closeListRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getInfoResponse">
+    <wsdl:part element="sch:getInfoResponse" name="getInfoResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setFooterRequest">
+    <wsdl:part element="sch:setFooterRequest" name="setFooterRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="purgeListRequest">
+    <wsdl:part element="sch:purgeListRequest" name="purgeListRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setHeaderRequest">
+    <wsdl:part element="sch:setHeaderRequest" name="setHeaderRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListDefinitionRequest">
+    <wsdl:part element="sch:getListDefinitionRequest" name="getListDefinitionRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSubscriptionsResponse">
+    <wsdl:part element="sch:getSubscriptionsResponse" name="getSubscriptionsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListResponse">
+    <wsdl:part element="sch:getListResponse" name="getListResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="changeEmailRequest">
+    <wsdl:part element="sch:changeEmailRequest" name="changeEmailRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addAdminsResponse">
+    <wsdl:part element="sch:addAdminsResponse" name="addAdminsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSubscribersResponse">
+    <wsdl:part element="sch:getSubscribersResponse" name="getSubscribersResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setInfoRequest">
+    <wsdl:part element="sch:setInfoRequest" name="setInfoRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAdminsResponse">
+    <wsdl:part element="sch:getAdminsResponse" name="getAdminsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setListDefinitionRequest">
+    <wsdl:part element="sch:setListDefinitionRequest" name="setListDefinitionRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getRobotsResponse">
+    <wsdl:part element="sch:getRobotsResponse" name="getRobotsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setInfoResponse">
+    <wsdl:part element="sch:setInfoResponse" name="setInfoResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getVersionResponse">
+    <wsdl:part element="sch:getVersionResponse" name="getVersionResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAdminsRequest">
+    <wsdl:part element="sch:getAdminsRequest" name="getAdminsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addSubscriberResponse">
+    <wsdl:part element="sch:addSubscriberResponse" name="addSubscriberResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListsRequest">
+    <wsdl:part element="sch:getListsRequest" name="getListsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setListDefinitionResponse">
+    <wsdl:part element="sch:setListDefinitionResponse" name="setListDefinitionResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addSubscriberRequest">
+    <wsdl:part element="sch:addSubscriberRequest" name="addSubscriberRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getTopicsResponse">
+    <wsdl:part element="sch:getTopicsResponse" name="getTopicsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getHeaderRequest">
+    <wsdl:part element="sch:getHeaderRequest" name="getHeaderRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="closeListResponse">
+    <wsdl:part element="sch:closeListResponse" name="closeListResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="delSubscriberRequest">
+    <wsdl:part element="sch:delSubscriberRequest" name="delSubscriberRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListRequest">
+    <wsdl:part element="sch:getListRequest" name="getListRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getFooterRequest">
+    <wsdl:part element="sch:getFooterRequest" name="getFooterRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSubscribersRequest">
+    <wsdl:part element="sch:getSubscribersRequest" name="getSubscribersRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="delSubscriberResponse">
+    <wsdl:part element="sch:delSubscriberResponse" name="delSubscriberResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getHeaderResponse">
+    <wsdl:part element="sch:getHeaderResponse" name="getHeaderResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getInfoRequest">
+    <wsdl:part element="sch:getInfoRequest" name="getInfoRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="purgeListResponse">
+    <wsdl:part element="sch:purgeListResponse" name="purgeListResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createListRequest">
+    <wsdl:part element="sch:createListRequest" name="createListRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setHeaderResponse">
+    <wsdl:part element="sch:setHeaderResponse" name="setHeaderResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="copyListRequest">
+    <wsdl:part element="sch:copyListRequest" name="copyListRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getVersionRequest">
+    <wsdl:part element="sch:getVersionRequest" name="getVersionRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getListTemplatesRequest">
+    <wsdl:part element="sch:getListTemplatesRequest" name="getListTemplatesRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="delAdminsRequest">
+    <wsdl:part element="sch:delAdminsRequest" name="delAdminsRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="Sympa">
+    <wsdl:operation name="getRobots">
+      <wsdl:input message="tns:getRobotsRequest" name="getRobotsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getRobotsResponse" name="getRobotsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getSubscriptions">
+      <wsdl:input message="tns:getSubscriptionsRequest" name="getSubscriptionsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getSubscriptionsResponse" name="getSubscriptionsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFooter">
+      <wsdl:input message="tns:getFooterRequest" name="getFooterRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getFooterResponse" name="getFooterResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getTopics">
+      <wsdl:input message="tns:getTopicsRequest" name="getTopicsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getTopicsResponse" name="getTopicsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getListDefinition">
+      <wsdl:input message="tns:getListDefinitionRequest" name="getListDefinitionRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getListDefinitionResponse" name="getListDefinitionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="copyList">
+      <wsdl:input message="tns:copyListRequest" name="copyListRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:copyListResponse" name="copyListResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeEmail">
+      <wsdl:input message="tns:changeEmailRequest" name="changeEmailRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:changeEmailResponse" name="changeEmailResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="delAdmins">
+      <wsdl:input message="tns:delAdminsRequest" name="delAdminsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:delAdminsResponse" name="delAdminsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getLists">
+      <wsdl:input message="tns:getListsRequest" name="getListsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getListsResponse" name="getListsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addAdmins">
+      <wsdl:input message="tns:addAdminsRequest" name="addAdminsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:addAdminsResponse" name="addAdminsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setFooter">
+      <wsdl:input message="tns:setFooterRequest" name="setFooterRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:setFooterResponse" name="setFooterResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createList">
+      <wsdl:input message="tns:createListRequest" name="createListRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:createListResponse" name="createListResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getListTemplates">
+      <wsdl:input message="tns:getListTemplatesRequest" name="getListTemplatesRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getListTemplatesResponse" name="getListTemplatesResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="closeList">
+      <wsdl:input message="tns:closeListRequest" name="closeListRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:closeListResponse" name="closeListResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getInfo">
+      <wsdl:input message="tns:getInfoRequest" name="getInfoRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getInfoResponse" name="getInfoResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="purgeList">
+      <wsdl:input message="tns:purgeListRequest" name="purgeListRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:purgeListResponse" name="purgeListResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setHeader">
+      <wsdl:input message="tns:setHeaderRequest" name="setHeaderRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:setHeaderResponse" name="setHeaderResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getList">
+      <wsdl:input message="tns:getListRequest" name="getListRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getListResponse" name="getListResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getSubscribers">
+      <wsdl:input message="tns:getSubscribersRequest" name="getSubscribersRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getSubscribersResponse" name="getSubscribersResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setInfo">
+      <wsdl:input message="tns:setInfoRequest" name="setInfoRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:setInfoResponse" name="setInfoResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAdmins">
+      <wsdl:input message="tns:getAdminsRequest" name="getAdminsRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getAdminsResponse" name="getAdminsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setListDefinition">
+      <wsdl:input message="tns:setListDefinitionRequest" name="setListDefinitionRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:setListDefinitionResponse" name="setListDefinitionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getVersion">
+      <wsdl:input message="tns:getVersionRequest" name="getVersionRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getVersionResponse" name="getVersionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addSubscriber">
+      <wsdl:input message="tns:addSubscriberRequest" name="addSubscriberRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:addSubscriberResponse" name="addSubscriberResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getHeader">
+      <wsdl:input message="tns:getHeaderRequest" name="getHeaderRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:getHeaderResponse" name="getHeaderResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="delSubscriber">
+      <wsdl:input message="tns:delSubscriberRequest" name="delSubscriberRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:delSubscriberResponse" name="delSubscriberResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SympaSoap11" type="tns:Sympa">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getRobots">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getRobotsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getRobotsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getSubscriptions">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getSubscriptionsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getSubscriptionsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getFooter">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getFooterRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getFooterResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getTopics">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getTopicsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getTopicsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getListDefinition">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getListDefinitionRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getListDefinitionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="copyList">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="copyListRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="copyListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="changeEmail">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="changeEmailRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="changeEmailResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="delAdmins">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="delAdminsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="delAdminsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getLists">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getListsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getListsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addAdmins">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="addAdminsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="addAdminsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setFooter">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="setFooterRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="setFooterResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createList">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="createListRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getListTemplates">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getListTemplatesRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getListTemplatesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="closeList">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="closeListRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="closeListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getInfo">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getInfoRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getInfoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="purgeList">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="purgeListRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="purgeListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setHeader">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="setHeaderRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="setHeaderResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getList">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getListRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getSubscribers">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getSubscribersRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getSubscribersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setInfo">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="setInfoRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="setInfoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAdmins">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getAdminsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getAdminsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setListDefinition">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="setListDefinitionRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="setListDefinitionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getVersion">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getVersionRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addSubscriber">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="addSubscriberRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="addSubscriberResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getHeader">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="getHeaderRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getHeaderResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="delSubscriber">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="delSubscriberRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="delSubscriberResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SympaService">
+    <wsdl:port binding="tns:SympaSoap11" name="SympaSoap11">
+      <soap:address location="/sympasoap11/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

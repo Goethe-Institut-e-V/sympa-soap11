@@ -1,0 +1,5 @@
+# You may override some %UNITSDIR%/sympasoap11.service parameters
+#FCGI_CHILDREN="5"
+#FCGI_USER="%SYMPA-USER%"
+#FCGI_GROUP="%SYMPA-GROUP%"
+#FCGI_OPTS="-M 0600 -U apache"

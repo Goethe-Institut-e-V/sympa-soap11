@@ -1,0 +1,12 @@
+# Apache httpd 2.4 configuration for SympaSOAP11
+# You may need to edit /etc/sysconfig/sympasoap11 as described in it.
+# You have to run separate fastCGI service sympasoap11: systemctl start sympasoap11
+
+<IfModule mod_proxy_fcgi.c>
+    <Location /sympasoap11>
+        SetHandler "proxy:unix:%SYMPA-PIDDIR%/sympasoap11.socket|fcgi://"
+        # Don't forget to edit lines below!
+        Require local
+        Require all granted
+    </Location>
+</IfModule>

@@ -1,0 +1,216 @@
+#!%PERL%
+
+# SOAP 1.1 / WSSE compliant interface for
+# Sympa - SYsteme de Multi-Postage Automatique
+#
+# Copyright 2013-2019 Goethe-Institut e.V.
+# Immo Goltz <immo.goltz.extern@goethe.de>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# %SYMPA-USER%
+
+use lib split(/:/, $ENV{SYMPALIB} || ''), '%SYMPA-MODULEDIR%';
+use strict;
+use warnings;
+use English qw(-no_match_vars);
+
+# Sympa API
+use Conf;
+use Sympa::Alarm;
+use Sympa::DatabaseManager;
+use Sympa::List;
+use Sympa::Log;
+use Sympa::WWW::Tools;
+
+# XML::Compile modules
+use XML::Compile::WSDL11;
+use XML::Compile::SOAP11;
+use XML::Compile::SOAP::WSS;
+use XML::Compile::WSS::Util	qw/:utp11/;
+use XML::Compile::Util		qw/pack_type/;
+use XML::Compile::SOAP::Daemon::CGI;
+use CGI::Fast;
+
+# SOAP11
+use Sympa::WWW::SOAP11;
+use Sympa::WWW::SOAP11::Error;
+
+
+## Load sympa config
+unless (Conf::load()) {
+    printf STDERR
+        "Unable to load sympa configuration, file %s or one of the vhost robot.conf files contain errors. Exiting\n",
+        Conf::get_sympa_conf();
+    exit 1;
+}
+
+# Open log
+my $log = Sympa::Log->instance;
+$log->{level} = $Conf::Conf{'log_level'};
+$log->openlog(
+    $Conf::Conf{'log_facility'} || $Conf::Conf{'syslog'},
+    $Conf::Conf{'log_socket_type'},
+    service => 'sympasoap11'
+);
+$log->syslog('info', 'SympaSOAP11 started');
+
+## We set the real UID with the effective UID value
+## It is useful to allow execution of scripts like alias_manager
+## that otherwise might loose the benefit of SetUID
+$UID = $EUID;    ## UID
+$GID = $EGID;    ## GID
+
+unless (Sympa::DatabaseManager->instance) {
+    $log->syslog('err', 'SympaSOAP11 requires a RDBMS to run');
+}
+
+## The process should not fork for sending mail
+## Messages will be spooled instead
+Sympa::Alarm->instance->{use_bulk} = 1;
+
+## Loading all Lists at startup, in order to increase execution speed
+
+my $all_lists = Sympa::List::get_lists('*');
+
+##############################################################################
+#    Soap part
+##############################################################################
+
+# XML::Compile::* uses Log::Report.	The 'default' dispatcher for error
+# messages is here changed from PERL (die/warn) into using Sympas log->syslog.
+# We can't use SYSLOG dispatcher as Sys::Syslog only allows one syslog stream
+use Log::Report 'sympasoap11', syntax => 'SHORT';
+#use Log::Report 'sympasoap11', syntax => 'SHORT', mode => 'VERBOSE';
+#use Log::Report 'sympasoap11', mode => 'DEBUG';
+
+# mapping of Dispatcher::Syslog reasons to Sympa Log level
+my %reasonToLevel = (
+	TRACE   => 'debug3',
+	ASSERT  => 'debug2',
+	INFO    => 'info',
+	NOTICE  => 'notice',
+	WARNING => 'err',
+	MISTAKE => 'err',
+	ERROR   => 'err',
+	FAULT   => 'err',
+	ALERT   => 'err',
+	FAILURE => 'err',
+	PANIC   => 'err'
+);
+
+# callback routine for dispatcher
+sub logger {
+	my ($disp, $options, $reason, $message) = @_;
+	##$log->syslog('info', "disp $disp");
+	##$log->syslog('info', "options $options");
+	#$log->syslog('info', "reason $reason");
+	##$log->syslog('info', "message $message");
+	my $level = $reasonToLevel{$reason};
+	#$log->syslog('info', "level $level");
+	my $newMessage = $options->{location}[0] . ' ' . $message->toString;
+	##$log->syslog('info', "newMessage $newMessage");
+	if ( defined $level ) {
+		$log->syslog($level, $newMessage);
+	} else {
+		$log->syslog('err', "Not supported reason $reason, using INFO");
+		$log->syslog('info', $newMessage);
+	}
+	##$log->syslog('info', "OK");
+}
+dispatcher CALLBACK => 'default', mode => $Conf::Conf{'log_level'}, callback => \&logger;
+
+# Logging to STDERR
+use Log::Report::Dispatcher::File;
+dispatcher 'FILE' => 'stderr', to => \*STDERR, mode => 3;
+
+
+# set up the daemon
+# the fcgi deamon is instantiated once by sympasoap11.fcgi
+# then ->runCgiRequest is called for every query
+
+# WSS
+my $wss = XML::Compile::SOAP::WSS->new;
+
+# WSDL
+my $wsdl = XML::Compile::WSDL11->new(Sympa::Constants::MODULEDIR . "/Sympa/WWW/SOAP11/sympasoap11.wsdl");
+$wsdl->importDefinitions(Sympa::Constants::MODULEDIR . "/Sympa/WWW/SOAP11/sympasoap11.xsd");
+
+# The error namespace used is not defined in the
+# wsdl neither the xsd, so have to add it explicitly.
+$wsdl->prefixes(err => Sympa::WWW::SOAP11::Error::ERROR_NS);
+
+# enforce the error name-space declaration to be available in all
+# returned messages: at compile-time, it is not known that it may
+# be used... but XML::Compile handles namespaces statically.
+$wsdl->prefixFor(Sympa::WWW::SOAP11::Error::ERROR_NS);
+
+# daemon connects itself to a WSDL
+our $daemon = XML::Compile::SOAP::Daemon::CGI->new;
+
+# GET request to ?WSDL returns wsdl file
+$daemon->setWsdlResponse(Sympa::Constants::MODULEDIR . "/Sympa/WWW/SOAP11/sympasoap11.wsdl");
+
+# With WSDL, most of the infrastructure is auto-generated.
+# The only thing to do, is provide call-back code references
+# for each of the portNames in the WSDL.
+my %callbacks = ( 
+	getVersion			 => \&Sympa::WWW::SOAP11::getVersion,
+	getRobots			 => \&Sympa::WWW::SOAP11::getRobots,
+	getListTemplates     => \&Sympa::WWW::SOAP11::getListTemplates,
+	getLists			 => \&Sympa::WWW::SOAP11::getLists,
+	getList			 	 => \&Sympa::WWW::SOAP11::getList,
+	createList			 => \&Sympa::WWW::SOAP11::createList,
+	getSubscribers	     => \&Sympa::WWW::SOAP11::getSubscribers,
+	addSubscriber	     => \&Sympa::WWW::SOAP11::addSubscriber,
+	delSubscriber        => \&Sympa::WWW::SOAP11::delSubscriber,
+	getSubscriptions     => \&Sympa::WWW::SOAP11::getSubscriptions,
+	getAdmins            => \&Sympa::WWW::SOAP11::getAdmins,
+	addAdmins	         => \&Sympa::WWW::SOAP11::addAdmins,
+	delAdmins    	     => \&Sympa::WWW::SOAP11::delAdmins,
+
+
+# es gibt eine subscribe spindle!!!
+#	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
+
+#	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
+
+#	, setListDefinition			 => \&Sympa::WWW::SOAP11::List::setListDefinition
+#	, copyList			 => \&Sympa::WWW::SOAP11::List::copyList
+#	, closeList			 => \&Sympa::WWW::SOAP11::List::closeList
+#	, purgeList			 => \&Sympa::WWW::SOAP11::List::purgeList
+#	, getFooter			 => \&Sympa::WWW::SOAP11::List::getFooter
+#	, getHeader			 => \&Sympa::WWW::SOAP11::List::getHeader
+#	, getInfo			 => \&Sympa::WWW::SOAP11::List::getInfo
+#	, setFooter			 => \&Sympa::WWW::SOAP11::List::setFooter
+#	, setHeader			 => \&Sympa::WWW::SOAP11::List::setHeader
+#	, setInfo			 => \&Sympa::WWW::SOAP11::List::setInfo
+
+#	, getTopics			 => \&Sympa::WWW::SOAP11::List::getTopics
+);
+
+$daemon->operationsFromWSDL (
+	$wsdl, 
+	callbacks => \%callbacks
+);
+
+# loop forever and handle requests
+while ( my $query = new CGI::Fast ) {
+    # from SOAP::Transport.pm
+    # Select appropriate robot.
+    $ENV{'SYMPA_ROBOT'} = Sympa::WWW::Tools::get_robot('soap_url_local', 'soap_url');
+    $log->syslog('debug3', 'sympasoap11 for SYMPA_ROBOT: %s', $ENV{'SYMPA_ROBOT'});
+
+	$daemon->runCgiRequest( query => $query, nph => 0 );
+}

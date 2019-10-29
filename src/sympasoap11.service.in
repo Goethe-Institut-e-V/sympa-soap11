@@ -1,0 +1,20 @@
+[Unit]
+Description=SOAP11 interface for Sympa mailing list manager
+After=syslog.target sympa.service
+ 
+[Service]
+Type=forking
+PIDFile=%SYMPA-PIDDIR%/sympasoap11.pid
+ExecStart=/usr/bin/spawn-fcgi -F $FCGI_CHILDREN \
+    -P %SYMPA-PIDDIR%/sympasoap11.pid \
+    -s %SYMPA-PIDDIR%/sympasoap11.socket \
+    -u $FCGI_USER -g $FCGI_GROUP $FCGI_OPTS -- \
+    %SYMPA-EXECCGIDIR%/sympasoap11.fcgi
+Environment="FCGI_CHILDREN=5"
+Environment="FCGI_USER=%SYMPA-USER%"
+Environment="FCGI_GROUP=%SYMPA-GROUP%"
+Environment="FCGI_OPTS=-M 0600 -U apache"
+EnvironmentFile=-/etc/sysconfig/sympasoap11
+
+[Install]
+WantedBy=multi-user.target
