@@ -28,10 +28,10 @@ use English qw(-no_match_vars);
 
 # Sympa API
 use Conf;
-use Sympa::Alarm;
 use Sympa::DatabaseManager;
 use Sympa::List;
 use Sympa::Log;
+use Sympa::Spool::Listmaster;
 use Sympa::WWW::Tools;
 
 # XML::Compile modules
@@ -78,7 +78,7 @@ unless (Sympa::DatabaseManager->instance) {
 
 ## The process should not fork for sending mail
 ## Messages will be spooled instead
-Sympa::Alarm->instance->{use_bulk} = 1;
+Sympa::Spool::Listmaster->instance->{use_bulk} = 1;
 
 ## Loading all Lists at startup, in order to increase execution speed
 
@@ -184,7 +184,7 @@ my %callbacks = (
 # es gibt eine subscribe spindle!!!
 #	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
 
-#	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
+	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
 
 #	, setListDefinition			 => \&Sympa::WWW::SOAP11::List::setListDefinition
 #	, copyList			 => \&Sympa::WWW::SOAP11::List::copyList

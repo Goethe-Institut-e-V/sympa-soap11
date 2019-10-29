@@ -294,36 +294,66 @@
 						If no moderator is defined for the list, then list owners will inherit the moderator role.
 					</xsd:documentation>
 				</xsd:annotation>
-			</xsd:enumeration>
-			<!-- FIXME: in create only above 2 values posible -->
-			<xsd:enumeration value="actual_editor">
-				<xsd:annotation>
-					<xsd:documentation>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="privileged_owner">
-				<xsd:annotation>
-					<xsd:documentation>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="receptive_editor">
-				<xsd:annotation>
-					<xsd:documentation>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="receptive_owner">
-				<xsd:annotation>
-					<xsd:documentation>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
+            </xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
 
- 
+
+	<xsd:simpleType name="ExtendedRoleType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Role a admin can have in a list
+				See https://www.sympa.org/manual/organization
+                enriched with effective rights
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="owner">
+				<xsd:annotation>
+					<xsd:documentation>
+						They are responsible for managing the members of the list, editing the list configuration and templates.
+						See OwnerType for different kinds (profiles) of owners.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="editor">
+				<xsd:annotation>
+					<xsd:documentation>
+						Moderators (also called Editors)
+						Moderators are responsible for the messages distributed in the mailing list (as opposed to owners who look after list members). Moderators are active if the list has been setup as a moderated mailing list.
+						If no moderator is defined for the list, then list owners will inherit the moderator role.
+					</xsd:documentation>
+				</xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="actual_editor">
+                <xsd:annotation>
+                    <xsd:documentation>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="privileged_owner">
+                <xsd:annotation>
+                    <xsd:documentation>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="receptive_editor">
+                <xsd:annotation>
+                    <xsd:documentation>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="receptive_owner">
+                <xsd:annotation>
+                    <xsd:documentation>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+
 
 	<!-- Complex Types ======================================================== -->
 
@@ -1055,7 +1085,7 @@
 						<xsd:documentation>List to query</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="1" name="role" type="sym:RoleType">
+				<xsd:element maxOccurs="1" minOccurs="1" name="role" type="sym:ExtendedRoleType">
 					<xsd:annotation>
 						<xsd:documentation>Admin type</xsd:documentation>
 					</xsd:annotation>
@@ -1675,19 +1705,20 @@
 					<xsd:documentation>Name of the list</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element maxOccurs="1" minOccurs="1" name="subscribers" type="xsd:integer">
+			<!-- xsd:element name="subscribers" type="xsd:integer" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>Total subscribers of the list</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element>
+			</xsd:element -->
 			<xsd:element maxOccurs="1" minOccurs="1" name="domain" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>Domain name of the list, default is the robot domain name set in the related robot.conf file or in file /etc/sympa.conf.</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element maxOccurs="4" minOccurs="1" name="stats" type="xsd:integer">
+			<!-- xsd:element name="stats" type="xsd:integer" minOccurs="1" maxOccurs="4">
 				<xsd:annotation>
 					<xsd:documentation>
+						FIXME: kommt nur 1x vor, nicht 1-4
 					The $list object contains only the first 4 values from the stats file.
 					/home/sympa/list_data/mylist/stats is a text file containing statistics about the list.
 					e.g. 1 5 619 3095 5 0 1400593718
@@ -1700,7 +1731,7 @@
 						last update date (epoch format) of the subscribers cache in DB, used by lists in include2 mode only.
 					</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element>
+			</xsd:element -->
 			<xsd:element maxOccurs="1" minOccurs="1" name="admin" type="sym:SympaListAdminType">
 				<xsd:annotation>
 					<xsd:documentation>List definition</xsd:documentation>
@@ -1975,20 +2006,22 @@
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element maxOccurs="unbounded" minOccurs="1" name="owner" type="sym:AdminType">
+			<!-- nicht mehr enthalten dort, unter amin_user als datensatz
+			<xsd:element name="owner" type="sym:AdminType" minOccurs="1" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation>
 						Eigentümer
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element maxOccurs="unbounded" minOccurs="0" name="editor" type="sym:AdminType">
+			<xsd:element name="editor" type="sym:AdminType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation>
 						Moderatoren
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+		-->
 		</xsd:sequence>
 	</xsd:complexType>
 

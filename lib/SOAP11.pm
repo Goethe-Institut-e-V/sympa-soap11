@@ -939,7 +939,7 @@ sub getAdmins($$) {
 #
 # addAdmins
 # 	add admins to list (owners/editors)
-#   see List.pm add_list_admin
+#   see List.pm add_list_admin/_add_list_admin
 #
 sub addAdmins($$) {
 	my ($server, $in) = @_;
@@ -1039,17 +1039,15 @@ sub addAdmins($$) {
 	return { result => { added => $ok_add, failed => $fail_add }, admin => \@result };
 }
 
-# List.pm
-#delete_list_member ( ARRAY )
-#  delete_list_admin ( ROLE, ARRAY )
 
-################################################################################
+
+
+#
 # delOwner
-#	remove 1 admins from list (owners/editors)
+#	remove admins from list (owners/editors)
 #   see List.pm delete_list_admin
 #   and wwsympa.fcgi
 #
-################################################################################
 sub delAdmins($$) {
 	my ($server, $in) = @_;
 
@@ -1089,9 +1087,16 @@ sub delAdmins($$) {
 	my $ok_add = 0;
 
 	# get parameters for each admin
-	# and try to add admin
+	# and try to del admin
 	foreach my $email ( @{$in->{delAdminsRequest}{email}} ) {
 		$total_add++;
+
+		# List.pm has no _add_list_admin equivalent for del, so we need to refresh list object after each delete
+		# invalidate cache and reload list
+#6.2.48		$list->_cache_publish_expiry('admin_user');
+#6.2.48		$list = Sympa::List->new($listname, $robot);
+		my $status = $list->load($listname, $robot);
+		$log->syslog('debug2', Dumper $status);
 
 		# return error if not role
 		unless ( $list->is_admin($role, $email) ) {
@@ -1101,9 +1106,9 @@ sub delAdmins($$) {
 			next;
 		}
 	
-		$log->syslog('debug', Dumper \@{$list->get_admins($role)});
-		$log->syslog('err', '### ANZAHL sc %s',  scalar(@{$list->get_admins($role)}));
-		$log->syslog('err', '### ANZAHL  %s',  $#{$list->get_admins($role)});
+		$log->syslog('debug2', Dumper \@{$list->get_admins($role)});
+		$log->syslog('debug2', '### ANZAHL sc %s',  scalar(@{$list->get_admins($role)}));
+		$log->syslog('debug2', '### ANZAHL  %s',  $#{$list->get_admins($role)});
 		# return error if last owner
 		#FIXME: der letzte wird trotzdem gelöscht
 		#FIXME: nur für owner
@@ -1124,19 +1129,23 @@ sub delAdmins($$) {
 			next;
 		}
 
+		$ok_add++;
 		$status{$email} = 'OK';
 		$log->syslog('info', 'Removed %s %s from list %s@%s', $role, $email, $listname, $robot);
-
 	}
+
 	# invalidate cache and reload list
-    $list->_cache_publish_expiry('admin_user');
-	$list = Sympa::List->new($listname, $robot);
+	#$list->_cache_publish_expiry('admin_user');
+#6.2.48	$list = Sympa::List->new($listname, $robot);
 
 	#FIXME: all die add/delete funktionieren nicht richtig. caching? nach restart der Anwendung sieht es ok aus.
 	# Don't let a list without a privileged admin
 	unless ( scalar(@{$list->get_admins('privileged_owner')}) ) {
 		for my $admin ($list->get_admins('owner')) {
 			my $email = $admin->{email};
+			# invalidate cache and reload list
+			#$list->_cache_publish_expiry('admin_user');
+#6.2.48			$list = Sympa::List->new($listname, $robot);
 			unless ( $list->update_list_admin($email, 'owner', {profile => 'privileged'}) ) {
 				$log->syslog('err', 'Failed to promote %s as new privileged owner in list %s@%s', $email, $listname, $robot);
 				$status{$email} .= ". Failed to promote " . $email . " as new privileged owner.";
@@ -1146,9 +1155,22 @@ sub delAdmins($$) {
 			$log->syslog('debug2', 'Promoted %s as new privileged owner.', $email);
 		}
 	}
+#FIXME:
+#FIXME: addAdmin -> getAdmins funktioniert
+#FIXME: delAdmin -> getAdmins (*x)/ addAdmins (*1) zeigt alte Werte
+#FIXME: delAdmins -> x* delAdmins oder 1* addAdmins -> getAdmins korrekt
+#FIXME:
+#FIXME: oh, mit 6.2.48 geht es plötzlich
+
+	# invalidate cache and reload list
+#    $list->_cache_publish_expiry('admin_user');
+#    $list->_cache_read_expiry('admin_user');
+#	$list = Sympa::List->new($listname, $robot);
+ #   $list->_cache_publish_expiry('admin_user');
+#	$list = Sympa::List->new($listname, $robot);
 
 	# get fresh admin objects 
-	foreach my $email ( @{$in->{addAdminsRequest}{email}} ) {
+	foreach my $email ( @{$in->{delAdminsRequest}{email}} ) {
 		#my $email = $admin->{email} || '';
 		push @result, { email => $email,
 						status => $status{$email},
@@ -1160,6 +1182,9 @@ sub delAdmins($$) {
 	$log->syslog('debug2','addOwner: %s', Dumper \@result);
 	return { result => { deleted => $ok_add, failed => $fail_add }, admin => \@result };
 }
+
+
+
 
 
 ################################################################################
@@ -1194,17 +1219,14 @@ sub getListDefinition($$) {
 		return Sympa::WWW::SOAP11::Error::forbidden()
 	}
 
-	#FIXME:
-	#TODO: workaround, da noch im wsdl aber nicht in List.pm mehr
-	$list->{'subscribers'} = $list->get_total();
-	$list->{'stats'} = "0";
-	$list->{'ad'} = "0";
-	# TODO: das ist neu en-US, fürher en_US
-	# wsdl so definiert
-	$list->{'admin'}{'lang'} =~ s/-/_/g;
+	# Save DEBUG
+	open FILE, ">", "/var/tmp/debug.list.txt";
+	print FILE Dumper $list;
+	close FILE;	
 
-	#FIXME: noch lange nicht fertig, viel geändert TODO: was brauchen wir wirklich?
-	#<error>required value for element `owner' missing at sch:getListDefinitionResponse/lists/admin</error>
+	#FIXME: noch lange nicht fertig, viel geändert 
+	#TODO: was brauchen wir wirklich?
+	#TODO: vergl. getList 
 
 	$log->syslog('debug', Dumper $list);
 	
