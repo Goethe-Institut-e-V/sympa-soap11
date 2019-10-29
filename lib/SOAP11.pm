@@ -1290,7 +1290,7 @@ sub changeEmail($$) {
 
 	my %result;
     foreach my $report (@{$spindle->{stash} || []}) {
-		$log->syslog('debug', Dumper $report);
+		$log->syslog('debug2', Dumper $report);
 		#FIXME:  welche Meldungen/Ergebnissse kommen denn hier?
         if ($report->[1] eq 'notice') {
             #Sympa::WWW::Report::notice_report_web(@{$report}[2, 3],$param->{'action'});
@@ -1303,10 +1303,10 @@ sub changeEmail($$) {
     }
 	#FIXME: auch erfolgreich wenn nichts geändert.
     unless (@{$spindle->{stash} || []}) {
-		$log->syslog('debug', Dumper $spindle);
+		$log->syslog('debug2', Dumper $spindle);
         #Sympa::WWW::Report::notice_report_web('performed', {},$param->{'action'});
 		$result{'OK'} = { name => "Erfolgreich. FIXME: wsdl muss geändert werden" };
-		$log->syslog('debug', 'rename erfolgreich %s', '');
+		$log->syslog('debug2', 'rename erfolgreich %s', '');
     }
 
 
@@ -1314,7 +1314,8 @@ sub changeEmail($$) {
 	foreach my $listen (keys %result) {
 		push @result, $result{$listen};
 	}
-
+	
+	$log->syslog('debug2', Dumper \@result);
 	return { lists => \@result };
 }
 

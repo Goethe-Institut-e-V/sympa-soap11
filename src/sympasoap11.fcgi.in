@@ -168,11 +168,12 @@ $daemon->setWsdlResponse(Sympa::Constants::MODULEDIR . "/Sympa/WWW/SOAP11/sympas
 my %callbacks = ( 
 	getVersion			 => \&Sympa::WWW::SOAP11::getVersion,
 	getRobots			 => \&Sympa::WWW::SOAP11::getRobots,
-	getListTemplates     => \&Sympa::WWW::SOAP11::getListTemplates,
+	getListTemplates     => \&Sympa::WWW::SOAP11::getListTemplates,  
 	getLists			 => \&Sympa::WWW::SOAP11::getLists,
 	getList			 	 => \&Sympa::WWW::SOAP11::getList,
 	createList			 => \&Sympa::WWW::SOAP11::createList,
 	getSubscribers	     => \&Sympa::WWW::SOAP11::getSubscribers,
+# es gibt eine subscribe spindle!!!
 	addSubscriber	     => \&Sympa::WWW::SOAP11::addSubscriber,
 	delSubscriber        => \&Sympa::WWW::SOAP11::delSubscriber,
 	getSubscriptions     => \&Sympa::WWW::SOAP11::getSubscriptions,
@@ -181,8 +182,7 @@ my %callbacks = (
 	delAdmins    	     => \&Sympa::WWW::SOAP11::delAdmins,
 
 
-# es gibt eine subscribe spindle!!!
-#	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
+	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
 
 	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
 

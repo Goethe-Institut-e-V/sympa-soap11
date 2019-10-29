@@ -381,27 +381,35 @@
 					<xsd:documentation>is user subscribed</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="included" type="xsd:boolean" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>is user included from other source</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>bounces this email address has</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="visibility" type="sym:UserVisibilityType" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="date" type="xsd:string" minOccurs="0" maxOccurs="1">
+			<!-- minOccurs was 0 => -->
+			<xsd:element name="date" type="xsd:string" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="startdate" type="xsd:string" minOccurs="0" maxOccurs="1">
+			<xsd:element name="update_date" type="xsd:string" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="reception" type="sym:SubscriberReceptionType" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Special delivery modes which the subscriber may select.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="visibility" type="sym:UserVisibilityType" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="number_messages" type="xsd:integer" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<!-- <= minOccurs was 0 -->
+			<!-- now optional elements -->
+			<xsd:element name="topics" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
@@ -411,12 +419,22 @@
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="bounce_score" type="xsd:string" minOccurs="0" maxOccurs="1">
+			<xsd:element name="inclusion" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
+					<xsd:documentation>subscriber included?</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="bounce_address" type="xsd:string" minOccurs="0" maxOccurs="1">
+			<xsd:element name="inclusion_label" type="xsd:string" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>subscriber included?</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="inclusion_ext" type="xsd:string" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>subscriber included?</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="startdate" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
@@ -426,32 +444,22 @@
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="id" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="reception" type="sym:SubscriberReceptionType" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Special delivery modes which the subscriber may select.</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="topics" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
 			<xsd:element name="suspend" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="update_date" type="xsd:string" minOccurs="0" maxOccurs="1">
+			<xsd:element name="bounce" type="xsd:string" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>bounces this email address has</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bounce_score" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="number_messages" type="xsd:integer" minOccurs="0" maxOccurs="1">
+			<xsd:element name="bounce_address" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation></xsd:documentation>
 				</xsd:annotation>
@@ -1231,6 +1239,53 @@
 
 
 
+	<xsd:element name="changeEmailRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Change email (= user) in all lists.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="old" type="sym:EmailType" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>email to change</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="new" type="sym:EmailType" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>New email address</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="changeEmailResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns all lists where the email was changed and status of user in each list.
+ 			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="lists" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+							<xsd:element name="subscribed" type="xsd:string" minOccurs="0" maxOccurs="1" />
+							<xsd:element name="owner" type="xsd:string" minOccurs="0" maxOccurs="1" />
+							<xsd:element name="editor" type="xsd:string" minOccurs="0" maxOccurs="1" />
+							<xsd:element name="user" type="xsd:string" minOccurs="0" maxOccurs="1" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
 
 <!-- bis hier erledigt --> 
 	<xsd:element name="getTopicsRequest">
@@ -1355,55 +1410,6 @@
 
  
 
-	<xsd:element name="changeEmailRequest">
-		<xsd:annotation>
-			<xsd:documentation>
-				Change email (= user) in all lists.
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="old" type="sym:EmailType" minOccurs="1" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>email to change</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-				<xsd:element name="new" type="sym:EmailType" minOccurs="1" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>New email address</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:element name="changeEmailResponse">
-		<xsd:annotation>
-			<xsd:documentation>
-				Returns all lists where the email was changed and status of user in each list.
- 			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="lists" minOccurs="0" maxOccurs="unbounded">
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
-							<xsd:element name="subscribed" type="xsd:string" minOccurs="0" maxOccurs="1" />
-							<xsd:element name="owner" type="xsd:string" minOccurs="0" maxOccurs="1" />
-							<xsd:element name="editor" type="xsd:string" minOccurs="0" maxOccurs="1" />
-							<xsd:element name="user" type="xsd:string" minOccurs="0" maxOccurs="1" />
-						</xsd:sequence>
-					</xsd:complexType>
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-
-
-
-	
 	<xsd:element name="getFooterRequest">
 		<xsd:annotation>
 			<xsd:documentation>
