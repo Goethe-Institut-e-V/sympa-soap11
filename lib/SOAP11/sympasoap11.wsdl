@@ -353,6 +353,31 @@
 	</xsd:simpleType>
 
 
+	<xsd:simpleType name="CloseListModeType">
+		<xsd:annotation>
+			<xsd:documentation>
+				default: close
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="close">
+				<xsd:annotation>
+					<xsd:documentation>
+						close list
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="purge">
+				<xsd:annotation>
+					<xsd:documentation>
+						purge list
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
 
 
 	<!-- Complex Types ======================================================== -->
@@ -1292,7 +1317,7 @@
 						<xsd:documentation>Name of the list to close/purge</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="mode" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="0" name="mode" type="sym:CloseListModeType">
 					<xsd:annotation>
 						<xsd:documentation>close (default) or purge list</xsd:documentation>
 					</xsd:annotation>
