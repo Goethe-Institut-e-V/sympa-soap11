@@ -1401,37 +1401,6 @@
 
 
 
-	<xsd:element name="purgeListRequest">
-		<xsd:annotation>
-			<xsd:documentation>
-				Completely remove a (closed) list.
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
-					<xsd:annotation>
-						<xsd:documentation>Name of the list to remove</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:element name="purgeListResponse">
-		<xsd:annotation>
-			<xsd:documentation>Returns status of list removal.</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-
- 
-
 	<xsd:element name="getFooterRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -3105,10 +3074,6 @@
     <wsdl:part element="sch:setFooterRequest" name="setFooterRequest">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="purgeListRequest">
-    <wsdl:part element="sch:purgeListRequest" name="purgeListRequest">
-    </wsdl:part>
-  </wsdl:message>
   <wsdl:message name="setHeaderRequest">
     <wsdl:part element="sch:setHeaderRequest" name="setHeaderRequest">
     </wsdl:part>
@@ -3219,10 +3184,6 @@
   </wsdl:message>
   <wsdl:message name="getInfoRequest">
     <wsdl:part element="sch:getInfoRequest" name="getInfoRequest">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="purgeListResponse">
-    <wsdl:part element="sch:purgeListResponse" name="purgeListResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="createListRequest">
@@ -3338,12 +3299,6 @@
       <wsdl:input message="tns:getInfoRequest" name="getInfoRequest">
     </wsdl:input>
       <wsdl:output message="tns:getInfoResponse" name="getInfoResponse">
-    </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="purgeList">
-      <wsdl:input message="tns:purgeListRequest" name="purgeListRequest">
-    </wsdl:input>
-      <wsdl:output message="tns:purgeListResponse" name="purgeListResponse">
     </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="setHeader">
@@ -3541,15 +3496,6 @@
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="getInfoResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="purgeList">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="purgeListRequest">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="purgeListResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>

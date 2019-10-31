@@ -1405,37 +1405,6 @@
 
 
 
-	<xsd:element name="purgeListRequest">
-		<xsd:annotation>
-			<xsd:documentation>
-				Completely remove a (closed) list.
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>Name of the list to remove</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:element name="purgeListResponse">
-		<xsd:annotation>
-			<xsd:documentation>Returns status of list removal.</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="status" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
-
- 
-
 	<xsd:element name="getFooterRequest">
 		<xsd:annotation>
 			<xsd:documentation>
