@@ -468,15 +468,21 @@ sub createList($$) {
         } elsif ($report->[1] eq 'notice') {
 			$log->syslog('info', 'report:notice, reason: %s', $reason_string);
 			# seen $reason_string: Aliases have been installed.
-		    return { status => 'OK' };
+		    #return { status => 'OK' };
         } elsif ($report->[1] eq 'user') {
 			$log->syslog('err', 'report:user, reason: %s', $reason_string);
 			return Sympa::WWW::SOAP11::Error::error($reason_string);
         }
     }
 
-	# do we ever get here?
-	$log->syslog('debug2', 'Why are we here?');
+	$log->syslog('info', 'no report, OK');
+
+	# workaround: spindle does not set lang
+	my $list = Sympa::List->new($listname, $robot);
+	$list->{'admin'}{'lang'} = $lang;
+	delete $list->{'admin'}{'defaults'}{'lang'};
+	$list->save_config($sender);
+
     return { status => 'OK' };
 }
 
