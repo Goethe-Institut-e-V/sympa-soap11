@@ -173,7 +173,7 @@ my %callbacks = (
 	getList			 	 => \&Sympa::WWW::SOAP11::getList,
 	createList			 => \&Sympa::WWW::SOAP11::createList,
 	getSubscribers	     => \&Sympa::WWW::SOAP11::getSubscribers,
-# es gibt eine subscribe spindle!!!
+	# TODO: there is a subscribe (double-opt-in) spindle!
 	addSubscriber	     => \&Sympa::WWW::SOAP11::addSubscriber,
 	delSubscriber        => \&Sympa::WWW::SOAP11::delSubscriber,
 	getSubscriptions     => \&Sympa::WWW::SOAP11::getSubscriptions,
@@ -184,9 +184,7 @@ my %callbacks = (
 	closeList			 => \&Sympa::WWW::SOAP11::closeList,
 
 
-
-
-	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
+#	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
 
 #	, setListDefinition			 => \&Sympa::WWW::SOAP11::List::setListDefinition
 #	, copyList			 => \&Sympa::WWW::SOAP11::List::copyList
@@ -196,7 +194,6 @@ my %callbacks = (
 #	, setFooter			 => \&Sympa::WWW::SOAP11::List::setFooter
 #	, setHeader			 => \&Sympa::WWW::SOAP11::List::setHeader
 #	, setInfo			 => \&Sympa::WWW::SOAP11::List::setInfo
-
 #	, getTopics			 => \&Sympa::WWW::SOAP11::List::getTopics
 );
 

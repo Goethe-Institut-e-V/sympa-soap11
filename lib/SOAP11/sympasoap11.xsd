@@ -382,6 +382,88 @@
 	</xsd:simpleType>
 
 
+	<xsd:simpleType name="ListVisibilityType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Sichtbarkeit der Liste
+				This parameter indicates whether the list should feature in the output generated in response to a LISTS command.
+				default: conceal
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="conceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						nur für Abonnenten sichtbar
+						conceal except for subscribers
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="noconceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						sichtbar
+						no conceal
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="intranet">
+				<xsd:annotation>
+					<xsd:documentation>
+						Intranet-Zugang
+						intranet access
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="secret">
+				<xsd:annotation>
+					<xsd:documentation>
+						unsichtbar - sogar für Abonnenten
+						conceal even for subscribers
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="ListStatusType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Status der Liste (status)
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="closed">
+				<xsd:annotation>
+					<xsd:documentation>closed list</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="error_config">
+				<xsd:annotation>
+					<xsd:documentation>erroneous configuration</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="family_closed">
+				<xsd:annotation>
+					<xsd:documentation>closed family instance</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="open">
+				<xsd:annotation>
+					<xsd:documentation>in operation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="pending">
+				<xsd:annotation>
+					<xsd:documentation>list not yet activated</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>	
+
+
+
 
 
 	<!-- Complex Types ======================================================== -->
@@ -1344,7 +1426,9 @@
 
 
 
-<!-- bis hier erledigt --> 
+<!-- ########################## TODO: not yet migrated old Elements ################### --> 
+
+<!--
 	<xsd:element name="getTopicsRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -1629,8 +1713,6 @@
 	
 
 	
-	
-	
 	<xsd:element name="getListDefinitionRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -1696,10 +1778,12 @@
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>	
-	
 
-<!-- ################################################## -->
+-->	
 
+<!-- TODO: not yet migrated old Types ################################################## -->
+
+<!--
 	<xsd:complexType name="SympaListType">
 		<xsd:annotation>
 			<xsd:documentation>Excerpt from Sympa $list object</xsd:documentation>
@@ -1710,17 +1794,20 @@
 					<xsd:documentation>Name of the list</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<!-- xsd:element name="subscribers" type="xsd:integer" minOccurs="1" maxOccurs="1">
+-->
+			<!-- <xsd:element name="subscribers" type="xsd:integer" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>Total subscribers of the list</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element -->
+			</xsd:element> -->
+<!--
 			<xsd:element name="domain" type="xsd:string" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>Domain name of the list, default is the robot domain name set in the related robot.conf file or in file /etc/sympa.conf.</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<!-- xsd:element name="stats" type="xsd:integer" minOccurs="1" maxOccurs="4">
+-->
+			<!-- <xsd:element name="stats" type="xsd:integer" minOccurs="1" maxOccurs="4">
 				<xsd:annotation>
 					<xsd:documentation>
 						FIXME: kommt nur 1x vor, nicht 1-4
@@ -1736,7 +1823,8 @@
 						last update date (epoch format) of the subscribers cache in DB, used by lists in include2 mode only.
 					</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element -->
+			</xsd:element> -->
+<!--			
 			<xsd:element name="admin" type="sym:SympaListAdminType" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>List definition</xsd:documentation>
@@ -2011,6 +2099,7 @@
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
+-->			
 			<!-- nicht mehr enthalten dort, unter amin_user als datensatz
 			<xsd:element name="owner" type="sym:AdminType" minOccurs="1" maxOccurs="unbounded">
 				<xsd:annotation>
@@ -2025,8 +2114,8 @@
 						Moderatoren
 					</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element>
-		-->
+			</xsd:element> -->
+<!--
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -2617,40 +2706,6 @@
 		</xsd:restriction>
 	</xsd:simpleType>	
 
-	<xsd:simpleType name="ListStatusType">
-		<xsd:annotation>
-			<xsd:documentation>
-				Status der Liste (status)
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="closed">
-				<xsd:annotation>
-					<xsd:documentation>closed list</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="error_config">
-				<xsd:annotation>
-					<xsd:documentation>erroneous configuration</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="family_closed">
-				<xsd:annotation>
-					<xsd:documentation>closed family instance</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="open">
-				<xsd:annotation>
-					<xsd:documentation>in operation</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="pending">
-				<xsd:annotation>
-					<xsd:documentation>list not yet activated</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-		</xsd:restriction>
-	</xsd:simpleType>	
 
 	<xsd:simpleType name="ListSendType">
 		<xsd:annotation>
@@ -2797,9 +2852,9 @@
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>	
+-->
 
-
-	<!--
+<!--
 	<xsd:simpleType name="">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -2833,7 +2888,7 @@
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>	
--->	
+	
 	
 	<xsd:simpleType name="OnOffType">
 		<xsd:annotation>
@@ -2856,9 +2911,6 @@
 	</xsd:simpleType>	
 	
 
-	
-	
-	
 	<xsd:simpleType name="PriorityType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -2873,62 +2925,9 @@
 			<xsd:pattern value="[z0-9]{1}" />
 		</xsd:restriction>
 	</xsd:simpleType>
+-->	
 
-
-	
-
-
-	<xsd:simpleType name="ListVisibilityType">
-		<xsd:annotation>
-			<xsd:documentation>
-				Sichtbarkeit der Liste
-				This parameter indicates whether the list should feature in the output generated in response to a LISTS command.
-				default: conceal
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="conceal">
-				<xsd:annotation>
-					<xsd:documentation>
-						nur für Abonnenten sichtbar
-						conceal except for subscribers
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="noconceal">
-				<xsd:annotation>
-					<xsd:documentation>
-						sichtbar
-						no conceal
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="intranet">
-				<xsd:annotation>
-					<xsd:documentation>
-						Intranet-Zugang
-						intranet access
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="secret">
-				<xsd:annotation>
-					<xsd:documentation>
-						unsichtbar - sogar für Abonnenten
-						conceal even for subscribers
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-		</xsd:restriction>
-	</xsd:simpleType>
-
-
-
-
-
-
-
-
+<!--
 	<xsd:complexType name="BounceType">
 		<xsd:annotation>
 			<xsd:documentation>Information on email bounces</xsd:documentation>
@@ -2956,10 +2955,9 @@
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
+-->
 
-
-
-
+<!--
 	<xsd:complexType name="TopicType">
 		<xsd:annotation>
 			<xsd:documentation>Topics</xsd:documentation>
@@ -2989,8 +2987,6 @@
 	</xsd:complexType>
 
 
-
-
 	<xsd:complexType name="SubTopicType">
 		<xsd:annotation>
 			<xsd:documentation>Subtopics</xsd:documentation>
@@ -3008,7 +3004,7 @@
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-
+-->
 
     
 
