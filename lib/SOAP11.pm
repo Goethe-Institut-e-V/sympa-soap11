@@ -487,6 +487,13 @@ sub createList($$) {
 }
 
 
+#FIXME: $reason_string ist jetzt (2.4.48) unlesbar (encoding mismatch?!)
+# oder weil Liste auf ru-RU steht?
+#delSubscriber lieferte kyrillischen text <sch:status>Undef. Почтовый адрес  не был найден в рассылке .</sch:status>
+#addSubscriber <sch:status>Undef. ÐÐ¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ñ '999-1@localhost.localdomain' ÑÐ¶Ðµ ÑÐ²Ð»ÑÐµÑÑÑ Ð¿Ð¾Ð´Ð¿Ð¸ÑÑÐ¸ÐºÐ¾Ð¼ ÑÐ°ÑÑÑÐ»ÐºÐ¸ 'liste-999'.</sch:status>
+#createList <faultstring>ÑÐ°ÑÑÑÐ»ÐºÐ° Ñ Ð¸Ð¼ÐµÐ½ÐµÐ¼ 'liste-999' ÑÐ¶Ðµ ÑÑÑÐµÑÑÐ²ÑÐµÑ</faultstring>
+# aber direkt nach start kommt <faultstring>'liste-999' list already exists</faultstring>,
+# debug2 ausgabe auf konsole ist aber ok, in kyrillisch
 #
 # helper function to translate with tt2 files
 #   used (at least) in createList
@@ -513,6 +520,11 @@ sub get_reason_string {
         $log->syslog('info', 'Error parsing');
         return '';
     }
+	# FIXME: debugging
+    $log->syslog('debug2', 'Report Elements: %s, %s, %s', $report->[1], $report->[2], $report->[0]->{action});
+	$log->syslog('debug2', 'Reason String: %s', $string);
+	$string = &Encode::decode('UTF8', $string);
+	$log->syslog('debug2', 'Reason String: %s', $string);
 
     return $string;
 }
@@ -1356,7 +1368,7 @@ sub closeList($$) {
 
 
 
-
+# not yet migrated/needed?
 ################################################################################
 # getListDefinition
 # 	get attributes of a list
