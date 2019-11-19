@@ -182,6 +182,7 @@ my %callbacks = (
 	delAdmins    	     => \&Sympa::WWW::SOAP11::delAdmins,
 	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
 	closeList			 => \&Sympa::WWW::SOAP11::closeList,
+	deleteList			 => \&Sympa::WWW::SOAP11::deleteList,
 
 
 #	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition

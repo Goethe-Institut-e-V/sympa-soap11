@@ -353,6 +353,7 @@
 	</xsd:simpleType>
 
 
+	<!-- not needed anymore, separated close/delete request
 	<xsd:simpleType name="CloseListModeType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -376,6 +377,7 @@
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
+	-->
 
 
 	<xsd:simpleType name="ListVisibilityType">
@@ -1341,7 +1343,6 @@
 
 
 
-
 	<xsd:element name="changeEmailRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -1385,23 +1386,18 @@
 
 
 
-
 	<xsd:element name="closeListRequest">
 		<xsd:annotation>
 			<xsd:documentation>
-				Close (disable) or purge (completely delete) a list
+				Close (disable) a list. Removing it from configuration, dumping then removing members etc.
+				List directory is kept thus list could be restored later.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
 					<xsd:annotation>
-						<xsd:documentation>Name of the list to close/purge</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="mode" type="sym:CloseListModeType">
-					<xsd:annotation>
-						<xsd:documentation>close (default) or purge list</xsd:documentation>
+						<xsd:documentation>Name of the list to close.</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:sequence>
@@ -1414,11 +1410,42 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="0" name="status" type="xsd:string"/>
+				<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+				<xsd:element maxOccurs="1" minOccurs="0" name="message" type="xsd:string"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 
+
+
+	<xsd:element name="deleteListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Delete (Sympa: purge) a list. Completely removing list from disk.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list to delete.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="deleteListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list deleting.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+				<xsd:element maxOccurs="1" minOccurs="0" name="message" type="xsd:string"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 
 
@@ -3082,6 +3109,14 @@
     <wsdl:part element="sch:getListRequest" name="getListRequest">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="deleteListRequest">
+    <wsdl:part element="sch:deleteListRequest" name="deleteListRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteListResponse">
+    <wsdl:part element="sch:deleteListResponse" name="deleteListResponse">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="getSubscribersRequest">
     <wsdl:part element="sch:getSubscribersRequest" name="getSubscribersRequest">
     </wsdl:part>
@@ -3209,6 +3244,12 @@
       <wsdl:input message="tns:getListRequest" name="getListRequest">
     </wsdl:input>
       <wsdl:output message="tns:getListResponse" name="getListResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteList">
+      <wsdl:input message="tns:deleteListRequest" name="deleteListRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:deleteListResponse" name="deleteListResponse">
     </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="getSubscribers">
@@ -3343,6 +3384,15 @@
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="getListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteList">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="deleteListRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deleteListResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>

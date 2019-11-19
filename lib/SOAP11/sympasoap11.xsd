@@ -357,6 +357,7 @@
 	</xsd:simpleType>
 
 
+	<!-- not needed anymore, separated close/delete request
 	<xsd:simpleType name="CloseListModeType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -380,6 +381,7 @@
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
+	-->
 
 
 	<xsd:simpleType name="ListVisibilityType">
@@ -1345,7 +1347,6 @@
 
 
 
-
 	<xsd:element name="changeEmailRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -1389,23 +1390,18 @@
 
 
 
-
 	<xsd:element name="closeListRequest">
 		<xsd:annotation>
 			<xsd:documentation>
-				Close (disable) or purge (completely delete) a list
+				Close (disable) a list. Removing it from configuration, dumping then removing members etc.
+				List directory is kept thus list could be restored later.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
 					<xsd:annotation>
-						<xsd:documentation>Name of the list to close/purge</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
-				<xsd:element name="mode" type="sym:CloseListModeType" minOccurs="0" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>close (default) or purge list</xsd:documentation>
+						<xsd:documentation>Name of the list to close.</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:sequence>
@@ -1418,11 +1414,42 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="status" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+				<xsd:element name="status" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+				<xsd:element name="message" type="xsd:string" minOccurs="0" maxOccurs="1"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 
+
+
+	<xsd:element name="deleteListRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Delete (Sympa: purge) a list. Completely removing list from disk.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>Name of the list to delete.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="deleteListResponse">
+		<xsd:annotation>
+			<xsd:documentation>Returns status of list deleting.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="status" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+				<xsd:element name="message" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 
 

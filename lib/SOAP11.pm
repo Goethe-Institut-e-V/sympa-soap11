@@ -1290,15 +1290,26 @@ sub changeEmail($$) {
 }
 
 
+sub closeList($$) {
+	my ($server, $in) = @_;
+	$in->{closeListRequest}{mode} = 'close';
+	_closeList($server, $in);
+}
 
+sub deleteList($$) {
+	my ($server, $in) = @_;
+	$in->{closeListRequest}{name} = $in->{deleteListRequest}{name};
+	$in->{closeListRequest}{mode} = 'purge';
+	_closeList($server, $in);
+}
 
 #
 # closeList
-# 	closeList in sympasoap
-# 	close (disable) a list
-#     or/and purge (completely remove) a list
+#	closeList in sympasoap
+#	close (disable) or
+#	purge (completely remove) a list
 #
-sub closeList($$) {
+sub _closeList($$) {
 	my ($server, $in) = @_;
 
 	# check auth
@@ -1355,10 +1366,10 @@ sub closeList($$) {
 			return Sympa::WWW::SOAP11::Error::error("Failed to $mode list $listname. Internal error");
 		} elsif ($report->[1] eq 'notice') {
 			$log->syslog('info', '%s list %s success', $mode, $listname);
-	return { status => 'OK' };
+			return { status => 'OK' , message => $reason_string };
 		} elsif ($report->[1] eq 'user') {
 			$log->syslog('err', 'Failed to %s list %s. Undef. %s', $mode, $listname, $reason_string);
-			return Sympa::WWW::SOAP11::Error::error("Failed to $mode list $listname. Undef. $reason_string");
+			return Sympa::WWW::SOAP11::Error::error("Failed to $mode list $listname. $reason_string");
 			next;
 		}
 	}
