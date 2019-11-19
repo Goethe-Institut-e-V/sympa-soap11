@@ -126,6 +126,9 @@ sub getVersion($$) {
 		return Sympa::WWW::SOAP11::Error::forbidden()
 	}
 
+	#$log->syslog('debug2', 'Sympa version: %s', Sympa::Constants::VERSION);
+	#$log->syslog('debug2', 'SOAP11 version: %s', Sympa::WWW::SOAP11::VERSION);
+
 	# return
 	return {
 		sympa => Sympa::Constants::VERSION,
@@ -996,10 +999,12 @@ sub addAdmins($$) {
 	foreach my $admin ( @{$in->{addAdminsRequest}{admin}} ) {
 		$total_add++;
 		my $email = $admin->{email} || '';
-		my $gecos = $admin->{gecos} || '';
-		my $profile = $admin->{profile} || 'normal';
-		my $reception = $admin->{reception} || 'mail';
-		my $visibility = $admin->{visibility} || 'noconceal';
+		#my $gecos = $admin->{gecos} || '';
+		# seit 2.4.48 ?? oder plötzlich? 
+		$admin->{gecos} = &Encode::decode('UTF8', $admin->{gecos});
+		#my $profile = $admin->{profile} || 'normal';
+		#my $reception = $admin->{reception} || 'mail';
+		#my $visibility = $admin->{visibility} || 'noconceal';
 
 		# ommit if already has role 
 		if ( $list->is_admin($role, $email) ) {
