@@ -357,32 +357,6 @@
 	</xsd:simpleType>
 
 
-	<!-- not needed anymore, separated close/delete request
-	<xsd:simpleType name="CloseListModeType">
-		<xsd:annotation>
-			<xsd:documentation>
-				default: close
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="close">
-				<xsd:annotation>
-					<xsd:documentation>
-						close list
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="purge">
-				<xsd:annotation>
-					<xsd:documentation>
-						purge list
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-		</xsd:restriction>
-	</xsd:simpleType>
-	-->
-
 
 	<xsd:simpleType name="ListVisibilityType">
 		<xsd:annotation>
@@ -470,210 +444,228 @@
 
 	<!-- Complex Types ======================================================== -->
 
-	<xsd:complexType name="SubscriberType">
+	<xsd:complexType name="PersonType">
 		<xsd:annotation>
-			<xsd:documentation>This type fits the Sympa Subscriber Object</xsd:documentation>
+			<xsd:documentation>Basic information about a person (a subscriber or admin)</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="email" type="sym:EmailType" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
-					<xsd:documentation>Email address of the subscriber.</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="gecos" type="xsd:string" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Information about the subscriber (last name, first name, etc.)</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="subscribed" type="xsd:boolean" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>is user subscribed</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<!-- minOccurs was 0 => -->
-			<xsd:element name="date" type="xsd:string" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="update_date" type="xsd:string" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="reception" type="sym:SubscriberReceptionType" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Special delivery modes which the subscriber may select.</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="visibility" type="sym:UserVisibilityType" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="number_messages" type="xsd:integer" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<!-- <= minOccurs was 0 -->
-			<!-- now optional elements -->
-			<xsd:element name="topics" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="custom_attribute" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="inclusion" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>subscriber included?</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="inclusion_label" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>subscriber included?</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="inclusion_ext" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>subscriber included?</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="startdate" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="enddate" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="suspend" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>bounces this email address has</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce_score" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce_address" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<!--
-				next elements are only part of the subscriber object
-				if inserted with $list->parse_list_member_bounce($subscriber); call
-			-->
-			<xsd:element name="first_bounce" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="last_bounce" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce_count" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce_class" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="bounce_level" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
-
-
-	<xsd:complexType name="AdminType">
-		<xsd:sequence>
-			<xsd:element name="email" type="sym:EmailType" minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Email address of the admin.</xsd:documentation>
+					<xsd:documentation>Email address.</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="gecos" type="xsd:string" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
-					<xsd:documentation>Information about the admin (last name, first name, etc.)</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="visibility" type="sym:AdminVisibility" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Visibility in list menu (GUI)</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="reception" type="sym:AdminReceptionType" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Reception mode for list notifications</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="profile" type="sym:ProfileType" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Profile of the owner role</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="info" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Private information</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="date" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="update_date" type="xsd:integer" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="id" type="xsd:string" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation></xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="role" type="sym:RoleType" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>admin role</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="subscribed" type="xsd:boolean" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						is admin subscribed
-						Note: getSubscriptions/getSubscriber return real subscribers
-						an admin may be "effective" subscribed
-					</xsd:documentation>
-					</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="included" type="xsd:boolean" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>is admin included from other source</xsd:documentation>
+					<xsd:documentation>Information like last name, first name etc.</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
+
+
+
+	<xsd:complexType name="SubscriberType">
+		<xsd:annotation>
+			<xsd:documentation>This type fits the Sympa Subscriber Object</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="sym:PersonType">	
+				<xsd:sequence>
+					<xsd:element name="subscribed" type="xsd:boolean" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>is user subscribed</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<!-- minOccurs was 0 => -->
+					<xsd:element name="date" type="xsd:string" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="update_date" type="xsd:string" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="reception" type="sym:SubscriberReceptionType" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>Special delivery modes which the subscriber may select.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="visibility" type="sym:UserVisibilityType" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="number_messages" type="xsd:integer" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<!-- <= minOccurs was 0 -->
+					<!-- now optional elements -->
+					<xsd:element name="topics" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="custom_attribute" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="inclusion" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>subscriber included?</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="inclusion_label" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>subscriber included?</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="inclusion_ext" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>subscriber included?</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="startdate" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="enddate" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="suspend" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bounce" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>bounces this email address has</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bounce_score" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bounce_address" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<!--
+						next elements are only part of the subscriber object
+						if inserted with $list->parse_list_member_bounce($subscriber); call
+					-->
+					<xsd:element name="first_bounce" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="last_bounce" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bounce_count" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bounce_class" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bounce_level" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="BaseAdminType">
+		<xsd:complexContent>
+			<xsd:extension base="sym:PersonType">	
+				<xsd:sequence>
+					<xsd:element name="info" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>Private information</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="visibility" type="sym:AdminVisibility" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>Visibility in list menu (GUI)</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="reception" type="sym:AdminReceptionType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>Reception mode for list notifications</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="profile" type="sym:ProfileType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>Profile of the owner role</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="ResponseAdminType">
+		<xsd:complexContent>
+			<xsd:extension base="sym:BaseAdminType">	
+				<xsd:sequence>
+					<xsd:element name="date" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="update_date" type="xsd:integer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="id" type="xsd:string" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation></xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="role" type="sym:RoleType" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>admin role</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="subscribed" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>
+								is admin subscribed
+								Note: getSubscriptions/getSubscriber return real subscribers
+								an admin may be "effective" subscribed
+							</xsd:documentation>
+							</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="included" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>is admin included from other source</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+		</xsd:extension>
+	</xsd:complexContent>
+</xsd:complexType>
  
 
 	<xsd:complexType name="ListType">
@@ -1223,7 +1215,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="admin" type="sym:AdminType" minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="admin" type="sym:ResponseAdminType" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -1249,7 +1241,7 @@
 					</xsd:annotation>
 				</xsd:element>
 				<!-- FISME: besser einfach email? -->
-				<xsd:element name="admin" type="sym:AdminType" minOccurs="1" maxOccurs="unbounded">
+				<xsd:element name="admin" type="sym:BaseAdminType" minOccurs="1" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation>Admins to add</xsd:documentation>
 					</xsd:annotation>
@@ -1279,7 +1271,7 @@
 						<xsd:sequence>
 							<xsd:element name="status" type="xsd:string" minOccurs="1" maxOccurs="1" />
 							<xsd:element name="email" type="sym:EmailType" minOccurs="1" maxOccurs="1" />
-							<xsd:element name="admin" type="sym:AdminType" minOccurs="0" maxOccurs="1" />
+							<xsd:element name="admin" type="sym:ResponseAdminType" minOccurs="0" maxOccurs="1" />
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>

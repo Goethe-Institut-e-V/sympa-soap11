@@ -1002,9 +1002,10 @@ sub addAdmins($$) {
 		#my $gecos = $admin->{gecos} || '';
 		# seit 2.4.48 ?? oder plötzlich? 
 		$admin->{gecos} = &Encode::decode('UTF8', $admin->{gecos});
-		#my $profile = $admin->{profile} || 'normal';
-		#my $reception = $admin->{reception} || 'mail';
-		#my $visibility = $admin->{visibility} || 'noconceal';
+		$admin->{info} = &Encode::decode('UTF8', $admin->{info});
+		$admin->{profile} ||= 'normal';
+		$admin->{reception} ||= 'mail';
+		$admin->{visibility} ||= 'noconceal';
 
 		# ommit if already has role 
 		if ( $list->is_admin($role, $email) ) {
