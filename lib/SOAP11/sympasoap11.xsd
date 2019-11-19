@@ -456,7 +456,6 @@
 	</xsd:complexType>
 
 
-
 	<xsd:complexType name="SubscriberType">
 		<xsd:annotation>
 			<xsd:documentation>This type fits the Sympa Subscriber Object</xsd:documentation>
@@ -656,9 +655,9 @@
 						</xsd:annotation>
 					</xsd:element>
 				</xsd:sequence>
-		</xsd:extension>
-	</xsd:complexContent>
-</xsd:complexType>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
  
 
 	<xsd:complexType name="ListType">

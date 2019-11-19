@@ -23,30 +23,21 @@ use strict;
 use warnings;
 use Encode qw();
 
-#use Sympa;
+# Sympa
 use Conf;
-#use Sympa::Constants;
 use Sympa::List;
 use Sympa::Log;
 use Sympa::Scenario;
-#use Sympa::Spindle::ProcessRequest;
-#use Sympa::Template;
-#use Sympa::Tools::Text;
-#use Sympa::User;
 use Sympa::WWW::Auth;
-#use Sympa::WWW::Session;
-
-# XML::Compile modules
-#use XML::Compile::Util;
-
-# debugging
-use Data::Dumper;
-$Data::Dumper::Indent = 1;
 
 # SOAP11
 my $VERSION = '0.5.0'; # Module::Build reads this line
 use constant VERSION => '0.5.0';
 use Sympa::WWW::SOAP11::Error;
+
+# debugging
+use Data::Dumper;
+$Data::Dumper::Indent = 1;
 
 
 # get logger instance
@@ -71,15 +62,14 @@ sub checkAuth($) {
 	# used in Auth.pm only
 	$ENV{'SYMPA_SOAP'} = 1;
 
-	# TODO: if wsse ... draus machen
 	# user/credentials from wsse
 	my $email = $in->{wsse_Security}{wsse_UsernameToken}{wsse_Username}{_} || undef;
-	$log->syslog('debug', "email: %s", $email);
 	# return unauthenticated if wsse not defined
 	unless (defined $email) {
    		$log->syslog('notice', "login authentication failed, no user in wsse" );
 		return 0;
 	}
+	$log->syslog('debug', "email: %s", $email);
 
 	# TODO:
 	# Paßwort als Text übertregn ok
@@ -1291,12 +1281,20 @@ sub changeEmail($$) {
 }
 
 
+
+
+#
+# closeList
+#
 sub closeList($$) {
 	my ($server, $in) = @_;
 	$in->{closeListRequest}{mode} = 'close';
 	_closeList($server, $in);
 }
 
+#
+# deleteList
+#
 sub deleteList($$) {
 	my ($server, $in) = @_;
 	$in->{closeListRequest}{name} = $in->{deleteListRequest}{name};
@@ -1342,14 +1340,10 @@ sub _closeList($$) {
         action       => 'close_list',
         current_list => $list,
         mode => $mode,
-            #(($list->{'admin'}{'status'} eq 'pending') ? 'purge' : 'close'),
         sender           => $sender,
         md5_check        => 1,
         scenario_context => {
             sender                  => $sender,
-            #remote_host             => $ENV{'REMOTE_HOST'},
-            #remote_addr             => $ENV{'REMOTE_ADDR'},
-            #remote_application_name => $ENV{'remote_application_name'}
         }
     );
 
