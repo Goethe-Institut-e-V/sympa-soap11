@@ -46,44 +46,6 @@
 	</xsd:simpleType>
 
 
-	<xsd:simpleType name="UserVisibilityType">
-		<xsd:annotation>
-			<xsd:documentation>
-				Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.
-				If this parameter is not declared, the subscriber will be visible for REVIEW.
-				Note: this option does not affect the results of a REVIEW command issued by an owner.
-				Default value: conceal
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="">
-				<xsd:annotation>
-					<xsd:documentation>
-						FIXME: leeren string  entfernen Default value: noconceal
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="conceal">
-				<xsd:annotation>
-					<xsd:documentation>
-						verborgen (conceal)
-						Puts the subscriber in conceal mode for the list. The subscriber will then become invisible during REVIEW on this list.
-						Only owners will see the whole subscriber list.
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="noconceal">
-				<xsd:annotation>
-					<xsd:documentation>
-						Übersicht auf der Seite für Listen-Berichte (noconceal)
-						Puts the subscriber in noconceal mode (default) for the list. The subscriber will then become visible during REVIEW of this list.
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-		</xsd:restriction>
-	</xsd:simpleType>
-
-
 	<xsd:simpleType name="SubscriberReceptionType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -187,7 +149,38 @@
 	</xsd:simpleType>
 
 
-	<xsd:simpleType name="AdminVisibility">
+	<xsd:simpleType name="UserVisibilityType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Special mode which allows the subscriber to remain invisible when a REVIEW command is issued for the list.
+				If this parameter is not declared, the subscriber will be visible for REVIEW.
+				Note: this option does not affect the results of a REVIEW command issued by an owner.
+				Default value: conceal
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="conceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						verborgen (conceal)
+						Puts the subscriber in conceal mode for the list. The subscriber will then become invisible during REVIEW on this list.
+						Only owners will see the whole subscriber list.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="noconceal">
+				<xsd:annotation>
+					<xsd:documentation>
+						Übersicht auf der Seite für Listen-Berichte (noconceal)
+						Puts the subscriber in noconceal mode (default) for the list. The subscriber will then become visible during REVIEW of this list.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="AdminVisibilityType">
 		<xsd:annotation>
 			<xsd:documentation>
 				Visibility in list menu (GUI)
@@ -599,7 +592,7 @@
 							<xsd:documentation>Private information</xsd:documentation>
 						</xsd:annotation>
 					</xsd:element>
-					<xsd:element maxOccurs="1" minOccurs="0" name="visibility" type="sym:AdminVisibility">
+					<xsd:element maxOccurs="1" minOccurs="0" name="visibility" type="sym:AdminVisibilityType">
 						<xsd:annotation>
 							<xsd:documentation>Visibility in list menu (GUI)</xsd:documentation>
 						</xsd:annotation>
