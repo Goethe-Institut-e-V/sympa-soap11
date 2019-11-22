@@ -996,6 +996,69 @@
 
 
 
+	<xsd:element name="subscribeSubscriberRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Subscribe subscriber(s) to a list. They get notified and need to double-opt-in.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>List to subscribe to</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="subscriber" minOccurs="1" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="email" type="sym:EmailType" minOccurs="1" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>User (= email address) to add</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="gecos" type="xsd:string" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>Short description of the user</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="subscribeSubscriberResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of subscription and parameters for each new user (subscriber).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="result" minOccurs="1" maxOccurs="1">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="subscribed" type="xsd:integer" minOccurs="1" maxOccurs="1" />
+							<xsd:element name="failed" type="xsd:integer" minOccurs="1" maxOccurs="1" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="subscriber" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="email" type="sym:EmailType" minOccurs="1" maxOccurs="1" />
+							<xsd:element name="status" type="xsd:string" minOccurs="1" maxOccurs="1" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
 	<xsd:element name="addSubscriberRequest">
 		<xsd:annotation>
 			<xsd:documentation>

@@ -992,6 +992,69 @@
 
 
 
+	<xsd:element name="subscribeSubscriberRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Subscribe subscriber(s) to a list. They get notified and need to double-opt-in.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to subscribe to</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+								<xsd:annotation>
+									<xsd:documentation>User (= email address) to add</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:element maxOccurs="1" minOccurs="0" name="gecos" type="xsd:string">
+								<xsd:annotation>
+									<xsd:documentation>Short description of the user</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="subscribeSubscriberResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of subscription and parameters for each new user (subscriber).
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="result">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="subscribed" type="xsd:integer"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="failed" type="xsd:integer"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
 	<xsd:element name="addSubscriberRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -3025,6 +3088,10 @@
     <wsdl:part element="sch:getAdminsResponse" name="getAdminsResponse">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="subscribeSubscriberResponse">
+    <wsdl:part element="sch:subscribeSubscriberResponse" name="subscribeSubscriberResponse">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="getSubscriptionsRequest">
     <wsdl:part element="sch:getSubscriptionsRequest" name="getSubscriptionsRequest">
     </wsdl:part>
@@ -3121,6 +3188,10 @@
     <wsdl:part element="sch:changeEmailRequest" name="changeEmailRequest">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="subscribeSubscriberRequest">
+    <wsdl:part element="sch:subscribeSubscriberRequest" name="subscribeSubscriberRequest">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="createListRequest">
     <wsdl:part element="sch:createListRequest" name="createListRequest">
     </wsdl:part>
@@ -3156,6 +3227,12 @@
       <wsdl:input message="tns:getAdminsRequest" name="getAdminsRequest">
     </wsdl:input>
       <wsdl:output message="tns:getAdminsResponse" name="getAdminsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="subscribeSubscriber">
+      <wsdl:input message="tns:subscribeSubscriberRequest" name="subscribeSubscriberRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:subscribeSubscriberResponse" name="subscribeSubscriberResponse">
     </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="getSubscriptions">
@@ -3260,6 +3337,15 @@
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="getAdminsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="subscribeSubscriber">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="subscribeSubscriberRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="subscribeSubscriberResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>

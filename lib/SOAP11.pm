@@ -71,20 +71,17 @@ sub checkAuth($) {
 	}
 	$log->syslog('debug', "email: %s", $email);
 
-	# TODO:
-	# Paßwort als Text übertregn ok
-	# wie hie rhandeln wenn als digest?
-	# TODO: das muß raus hier!!!
-	$log->syslog('debug', "pass: %s", $in->{wsse_Security}{wsse_UsernameToken}{wsse_Password}{_});
+	my $password = $in->{wsse_Security}{wsse_UsernameToken}{wsse_Password}{_} || undef;
+	# return unauthenticated if wsse not defined
+	unless (defined $password) {
+		$log->syslog('notice', "login authentication failed, no password in wsse" );
+		return 0;
+	}
 
-	my $user = Sympa::WWW::Auth::check_auth(
-					$ENV{'SYMPA_ROBOT'},
-					$email,
-					$in->{wsse_Security}{wsse_UsernameToken}{wsse_Password}{_} || ''
-				);
-	# return unauthenticated
+	my $user = Sympa::WWW::Auth::check_auth( $ENV{'SYMPA_ROBOT'}, $email, $password );
 	unless ($user) {
    		$log->syslog('notice', "login authentication failed for %s", $email);
+		# return unauthenticated
 		return 0;
 	}
 
@@ -115,9 +112,6 @@ sub getVersion($$) {
 		$log->syslog('info', 'not allowed for %s', $ENV{'USER_EMAIL'});
 		return Sympa::WWW::SOAP11::Error::forbidden()
 	}
-
-	#$log->syslog('debug2', 'Sympa version: %s', Sympa::Constants::VERSION);
-	#$log->syslog('debug2', 'SOAP11 version: %s', Sympa::WWW::SOAP11::VERSION);
 
 	# return
 	return {
@@ -623,6 +617,104 @@ sub getSubscribers($$) {
 
 
 #
+# subscribeSubscriber
+#	"do_subscribe" in wwsympa.fcgi
+#	subscribe a subscriber to a list (with double opt in)
+#   Note:
+#     - double opt in needs list subscribe be set to 'auth*'
+#     - sympas default request_auth.tt2 template needs to be adjusted as it checks for conf.wwsympa_url set
+#       and than omits the email reply part
+#
+sub subscribeSubscriber($$) {
+	my ($server, $in) = @_;
+	
+	# check auth
+	return Sympa::WWW::SOAP11::Error::unauthorized() 
+	if not checkAuth($in);
+	$ENV{'SYMPA_SOAP'} = 0;
+
+	# get parameters
+	my $listname = $in->{subscribeSubscriberRequest}{name} || '';
+
+	# sender MUST not be an admin, 'nobody' is also not what we want
+    my $sender                  = undef; 
+    my $robot                   = $ENV{'SYMPA_ROBOT'};
+
+	# return error if unknown list
+    my $list = Sympa::List->new($listname, $robot);
+    unless ($list) {
+        $log->syslog('info',
+            'Add to list %s by %s refused, list unknown to robot %s',
+            $listname, $sender, $robot);
+		return Sympa::WWW::SOAP11::Error::error("No such list");
+    }
+
+	my @result;
+	my $total_sub = 0;
+	my $ok_sub = 0;
+	# data for each Subscriber
+	foreach my $subscriber ( @{$in->{subscribeSubscriberRequest}{subscriber}} ) {
+		$total_sub++;
+		my $email = $subscriber->{email} || '';
+		my $gecos = $subscriber->{gecos} || '';
+		$gecos = &Encode::decode('UTF8', $gecos);
+
+		my $status = '';
+
+		# set sender here to the email to be subscribed
+		$sender = $email;
+		my $spindle = Sympa::Spindle::ProcessRequest->new(
+			context          => $list,
+			action           => 'subscribe',
+			sender           => $sender,
+			email            => $email,
+			gecos            => $gecos,
+			# this MUST not be defined or MUST be set to 0 else there is no double-opt-in
+			# because 'auth' would alreday be satisfied here. 
+			md5_check        => 0,
+			scenario_context => {
+				sender                  => $sender,
+				email                   => $email,
+			}
+		);
+		unless ($spindle and $spindle->spin) {
+			$log->syslog('err',
+				'Add %s to list %s by %s in robot %s failed. Internal error',
+				$email, $listname, $sender, $robot);			
+			push @result, { email => $email, status => 'Internal error' };
+			next;
+		}
+
+		foreach my $report (@{$spindle->{stash} || []}) {
+			my $reason_string = get_reason_string($report, $robot);
+			if ($report->[1] eq 'auth') {
+				push @result, { email => $email, status => 'Not allowed. ' . $reason_string };
+				next;
+			} elsif ($report->[1] eq 'intern') {
+				push @result, { email => $email, status => 'Internal error' };
+				next;
+			} elsif ($report->[1] eq 'notice') {
+				push @result, { email => $email, status => 'OK. ' .  $reason_string };
+				$ok_sub++;
+				next;
+			} elsif ($report->[1] eq 'user') {
+				push @result, { email => $email, status => 'Undef. ' . $reason_string };
+				next;
+			}
+		}
+
+	}
+
+	my $fail_sub = $total_sub - $ok_sub;
+
+	$log->syslog('debug2', 'subscribeSubscriber result: %s', Dumper \@result );
+	return { result => { subscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
+}
+
+
+
+
+#
 # addSubscriber
 #	"add" in sympasoap
 #	adds a subscriber to a list (without double opt in!)
@@ -688,9 +780,6 @@ sub addSubscriber($$) {
 			scenario_context => {
 				sender                  => $sender,
 				email                   => $email,
-				#remote_host             => $ENV{'REMOTE_HOST'},
-				#remote_addr             => $ENV{'REMOTE_ADDR'},
-				#remote_application_name => $ENV{'remote_application_name'}
 			}
 		);
 		unless ($spindle and $spindle->spin) {

@@ -173,8 +173,8 @@ my %callbacks = (
 	getList			 	 => \&Sympa::WWW::SOAP11::getList,
 	createList			 => \&Sympa::WWW::SOAP11::createList,
 	getSubscribers	     => \&Sympa::WWW::SOAP11::getSubscribers,
-	# TODO: there is a subscribe (double-opt-in) spindle!
 	addSubscriber	     => \&Sympa::WWW::SOAP11::addSubscriber,
+	subscribeSubscriber	 => \&Sympa::WWW::SOAP11::subscribeSubscriber,
 	delSubscriber        => \&Sympa::WWW::SOAP11::delSubscriber,
 	getSubscriptions     => \&Sympa::WWW::SOAP11::getSubscriptions,
 	getAdmins            => \&Sympa::WWW::SOAP11::getAdmins,
