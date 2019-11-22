@@ -1126,6 +1126,64 @@
  
  
 
+	<xsd:element name="unsubscribeSubscriberRequest">
+		<xsd:annotation>
+			<xsd:documentation>
+				Unsubscriber(s) from list.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>List to unsubscribe users from</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="1" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType">
+								<xsd:annotation>
+									<xsd:documentation>User (= email address) to unsubscribe</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="unsubscribeSubscriberResponse">
+		<xsd:annotation>
+			<xsd:documentation>
+				Returns status of removal for each subscriber.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element maxOccurs="1" minOccurs="1" name="result">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="unsubscribed" type="xsd:integer"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="failed" type="xsd:integer"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="subscriber">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element maxOccurs="1" minOccurs="1" name="email" type="sym:EmailType"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="status" type="xsd:string"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+
 	<xsd:element name="delSubscriberRequest">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -3196,12 +3254,20 @@
     <wsdl:part element="sch:createListRequest" name="createListRequest">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="unsubscribeSubscriberResponse">
+    <wsdl:part element="sch:unsubscribeSubscriberResponse" name="unsubscribeSubscriberResponse">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="addAdminsResponse">
     <wsdl:part element="sch:addAdminsResponse" name="addAdminsResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="getVersionRequest">
     <wsdl:part element="sch:getVersionRequest" name="getVersionRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="unsubscribeSubscriberRequest">
+    <wsdl:part element="sch:unsubscribeSubscriberRequest" name="unsubscribeSubscriberRequest">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="getListTemplatesRequest">
@@ -3317,6 +3383,12 @@
       <wsdl:input message="tns:getSubscribersRequest" name="getSubscribersRequest">
     </wsdl:input>
       <wsdl:output message="tns:getSubscribersResponse" name="getSubscribersResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unsubscribeSubscriber">
+      <wsdl:input message="tns:unsubscribeSubscriberRequest" name="unsubscribeSubscriberRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:unsubscribeSubscriberResponse" name="unsubscribeSubscriberResponse">
     </wsdl:output>
     </wsdl:operation>
   </wsdl:portType>
@@ -3472,6 +3544,15 @@
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="getSubscribersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unsubscribeSubscriber">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="unsubscribeSubscriberRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="unsubscribeSubscriberResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>

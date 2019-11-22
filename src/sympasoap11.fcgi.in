@@ -176,6 +176,7 @@ my %callbacks = (
 	addSubscriber	     => \&Sympa::WWW::SOAP11::addSubscriber,
 	subscribeSubscriber	 => \&Sympa::WWW::SOAP11::subscribeSubscriber,
 	delSubscriber        => \&Sympa::WWW::SOAP11::delSubscriber,
+	unsubscribeSubscriber	 => \&Sympa::WWW::SOAP11::unsubscribeSubscriber,
 	getSubscriptions     => \&Sympa::WWW::SOAP11::getSubscriptions,
 	getAdmins            => \&Sympa::WWW::SOAP11::getAdmins,
 	addAdmins	         => \&Sympa::WWW::SOAP11::addAdmins,

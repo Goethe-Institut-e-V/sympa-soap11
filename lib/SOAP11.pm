@@ -663,6 +663,7 @@ sub subscribeSubscriber($$) {
 
 		# set sender here to the email to be subscribed
 		$sender = $email;
+
 		my $spindle = Sympa::Spindle::ProcessRequest->new(
 			context          => $list,
 			action           => 'subscribe',
@@ -814,6 +815,97 @@ sub addSubscriber($$) {
 
 	$log->syslog('debug2', 'addSubscriber result: %s', Dumper \@result );
 	return { result => { subscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
+}
+
+
+
+
+#
+# unsubscribeSubscriber
+#	do_signoff in wwsympa.fcgi
+#	unsubsribes a subscriber from a list (with his approval)
+#   Note:
+#     - double opt out needs list unsubscribe be set to 'auth*'
+#     - sympas default request_auth.tt2 template needs to be adjusted as it checks for conf.wwsympa_url set
+#       and than omits the email reply part
+#
+sub unsubscribeSubscriber($$) {
+	my ($server, $in) = @_;
+
+	# check auth
+	return Sympa::WWW::SOAP11::Error::unauthorized() 
+	if not checkAuth($in);
+
+	# get parameters
+	my $listname = $in->{unsubscribeSubscriberRequest}{name} || '';
+
+    my $sender                  = undef;
+    my $robot                   = $ENV{'SYMPA_ROBOT'};
+
+	# return error if unknown list
+    my $list = Sympa::List->new($listname, $robot);
+    unless ($list) {
+        $log->syslog('info',
+            'Add to list %s by %s refused, list unknown to robot %s',
+            $listname, $sender, $robot);
+		return Sympa::WWW::SOAP11::Error::error("No such list");
+    }
+
+	my @result;
+	my $total_sub = 0;
+	my $ok_sub = 0;
+	# data for each Subscriber
+	foreach my $subscriber ( @{$in->{unsubscribeSubscriberRequest}{subscriber}} ) {
+		$total_sub++;
+		my $email = $subscriber->{email} || '';
+
+	 	my $status = '';
+
+		$sender = $email;
+
+		my $spindle = Sympa::Spindle::ProcessRequest->new(
+			context          => $list,
+			action           => 'signoff',
+			sender           => $sender,
+			email            => $email,
+			md5_check        => 0,
+			scenario_context => {
+				sender                  => $sender,
+				email                   => $email,
+			}
+		);
+		unless ($spindle and $spindle->spin) {
+			$log->syslog('err',
+				'Remove %s from list %s by %s in robot %s failed. Internal error',
+				$email, $listname, $sender, $robot);			
+			push @result, { email => $email, status => 'Internal error' };
+			next;
+		}
+
+		foreach my $report (@{$spindle->{stash} || []}) {
+			my $reason_string = get_reason_string($report, $robot);
+			if ($report->[1] eq 'auth') {
+				push @result, { email => $email, status => 'Not allowed. ' . $reason_string };
+				next;
+			} elsif ($report->[1] eq 'intern') {
+				push @result, { email => $email, status => 'Internal error' };
+				next;
+			} elsif ($report->[1] eq 'notice') {
+				push @result, { email => $email, status => 'OK. ' . $reason_string };
+				$ok_sub++;
+				next;
+			} elsif ($report->[1] eq 'user') {
+				push @result, { email => $email, status => 'Undef. ' . $reason_string };
+				next;
+			}
+		}
+
+	}
+
+	my $fail_sub = $total_sub - $ok_sub;
+
+	$log->syslog('debug2', 'unsubscribeSubscriber result: %s', Dumper \@result );
+	return { result => { unsubscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
 }
 
 
