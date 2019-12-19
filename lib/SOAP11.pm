@@ -57,9 +57,9 @@ sub getLists($$);
 sub checkAuth($) {
 	my $in = shift;
   
-  	#TODO: really needed?
-	# Set an env var to find out if in a SOAP context
-	# used in Auth.pm only
+	# Set ENV marking SOAP context
+	# Used in Auth.pm only, then skipping Sympa::WWW::Report::reject_report_web() call
+  	# TODO: really needed?
 	$ENV{'SYMPA_SOAP'} = 1;
 
 	# user/credentials from wsse
@@ -209,6 +209,7 @@ sub getListTemplates($$) {
 #
 # getLists
 #	returns the names of the lists of this robot
+#   either all lists or filtered by topic or listname
 #
 sub getLists($$) {
 	my ($server, $in) = @_;
@@ -220,8 +221,6 @@ sub getLists($$) {
 	# get parameters
 	my $listname = $in->{getListsRequest}{list} || '';
 	my $topic = $in->{getListsRequest}{topic} || '';
-	#my $subtopic = $in->{getListsRequest}{subtopic} || '';  
-	#$log->syslog('info', 'list-pattern: %s, topics: %s/%s; user: %s', $listname, $topic, $subtopic, $ENV{'USER_EMAIL'});
 	$log->syslog('info', 'list-pattern: %s, topic: %s; user: %s', $listname, $topic, $ENV{'USER_EMAIL'});
 	
 	my @result;
@@ -242,28 +241,6 @@ sub getLists($$) {
 		next unless ($action eq 'do_it');
 		# || $list->am_i('owner', $ENV{'USER_EMAIL'}) );
 		
-		# no topic ; List all lists
-		#if (!$topic) {
-		#	push @result, $list->{'name'};
-		#	
-		#}
-		#elsif ($list->{'admin'}{'topics'}) {
-		#	foreach my $list_topic (@{$list->{'admin'}{'topics'}}) {
-		#		my @tree = split '/', $list_topic;
-
-		#		next if (($topic) && ($tree[0] ne $topic));
-		#		next if (($subtopic) && ($tree[1] ne $subtopic));
-		#		
-		#		push @result, $list->{'name'};
-		#	}
-		#}
-		#elsif ($topic eq 'topicsless') {
-		#	push @result, $list->{'name'};
-		#}
-		
-		# above tests not needed, get_lists is is already filtered on topic
-		# subtopic considered not so important
-		# also removed from wsdl
 		push @result, $list->{'name'};
 
 	}
@@ -280,6 +257,7 @@ sub getLists($$) {
 # getLists
 # 	"lists" in sympasoap
 #	returns the lists of this robot
+#   either each list or filtered by listname
 #
 sub getList($$) {
 	my ($server, $in) = @_;
@@ -386,16 +364,18 @@ sub createList($$) {
 	my $topics =  $in->{createListRequest}{topics};
 	# topics is mandatory in sympa
 	$topics = 'other' unless $topics;
-	#FIXME: lang is not set in Spindle
 	my $lang =  $in->{createListRequest}{lang};
-	# FIXME: zumindest mit perlbrew installtion ist es mit decode falsch! Ohne ist OK!
-	# FIXME:    siehe auch addSubscriber, dort ist nun (mit perlbrew?) decode nötig! Ohne war es wieder defekt.
-	# needs decode to be correct in saved list description file, in web gui and sympa-soap11 (getList)
-	# $subject = &Encode::decode('UTF8', $subject);
+	# FIXME:
+	# Encode::decode is needed to have correct encoding in saved list description file, in web gui and sympa-soap11 (getList)
+	# in setups using CentOS7, system Perl, sympa from epel, sopa11 dependencies installed with cpanm
+	#$subject = &Encode::decode('UTF8', $subject);
+	# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
+	# Encode::decode breaks encoding
+	# TODO:  compare addSubscriber
+	# there _with_ perlbrew Encode::decode is needed
 
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
-    #my $remote_application_name = 'soap11';
 
 	$log->syslog(
         'info',
@@ -433,8 +413,8 @@ sub createList($$) {
             'candidate_template'      => $list_tpl,
             'candidate_info'          => $description,
             'candidate_topics'        => $topics,
-            'remote_host'             => $ENV{'REMOTE_HOST'},
-            'remote_addr'             => $ENV{'REMOTE_ADDR'},
+            #'remote_host'             => $ENV{'REMOTE_HOST'},
+            #'remote_addr'             => $ENV{'REMOTE_ADDR'},
             #'remote_application_name' => 'soap11'
         }
     );
@@ -464,7 +444,7 @@ sub createList($$) {
 
 	$log->syslog('info', 'no report, OK');
 
-	# workaround: spindle does not set lang
+	# workaround for: spindle does not set lang
 	my $list = Sympa::List->new($listname, $robot);
 	$list->{'admin'}{'lang'} = $lang;
 	delete $list->{'admin'}{'defaults'}{'lang'};
@@ -474,13 +454,11 @@ sub createList($$) {
 }
 
 
-#FIXME: $reason_string ist jetzt (2.4.48) unlesbar (encoding mismatch?!)
-# oder weil Liste auf ru-RU steht?
-#delSubscriber lieferte kyrillischen text <sch:status>Undef. Почтовый адрес  не был найден в рассылке .</sch:status>
-#addSubscriber <sch:status>Undef. ÐÐ¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ñ '999-1@localhost.localdomain' ÑÐ¶Ðµ ÑÐ²Ð»ÑÐµÑÑÑ Ð¿Ð¾Ð´Ð¿Ð¸ÑÑÐ¸ÐºÐ¾Ð¼ ÑÐ°ÑÑÑÐ»ÐºÐ¸ 'liste-999'.</sch:status>
-#createList <faultstring>ÑÐ°ÑÑÑÐ»ÐºÐ° Ñ Ð¸Ð¼ÐµÐ½ÐµÐ¼ 'liste-999' ÑÐ¶Ðµ ÑÑÑÐµÑÑÐ²ÑÐµÑ</faultstring>
-# aber direkt nach start kommt <faultstring>'liste-999' list already exists</faultstring>,
-# debug2 ausgabe auf konsole ist aber ok, in kyrillisch
+#FIXME:
+# right after start we get <faultstring>'liste-999' list already exists</faultstring>,
+# but later on we get translated message, e.g. <sch:status>Undef. Почтовый адрес  не был найден в рассылке .</sch:status>
+# for a list with lang ru-RU
+# TODO: always respond here with english message
 #
 # helper function to translate with tt2 files
 #   used (at least) in createList
@@ -510,6 +488,8 @@ sub get_reason_string {
 	# FIXME: debugging
     $log->syslog('debug2', 'Report Elements: %s, %s, %s', $report->[1], $report->[2], $report->[0]->{action});
 	$log->syslog('debug2', 'Reason String: %s', $string);
+	# TODO: system and perlbrew perl need decode
+	# note: debug2 message on console is correct
 	$string = &Encode::decode('UTF8', $string);
 	$log->syslog('debug2', 'Reason String: %s', $string);
 
@@ -564,18 +544,15 @@ sub getSubscribers($$) {
 
 	# return forbidden if not authorized
 	if ($action =~ /reject/i) {
-        my $reason_string = get_reason_string(
-            [{action => 'review'}, 'auth', $result->{'reason'}], $robot);
-        $log->syslog('info', 'Review %s from %s refused (not allowed)',
-            $listname, $sender);
+        my $reason_string = get_reason_string([ {action => 'review'}, 'auth', $result->{'reason'} ], $robot);
+        $log->syslog('info', 'Review %s from %s refused (not allowed)', $listname, $sender);
 		# TODO: reason_string mit ausgeben?
 		return  Sympa::WWW::SOAP11::Error::forbidden();
 	}
 	
 	if ($action =~ /do_it/i) {
 		my @result;
-        my $is_owner = $list->is_admin('owner', $sender)
-            || Sympa::is_listmaster($list, $sender);
+        my $is_owner = $list->is_admin('owner', $sender) || Sympa::is_listmaster($list, $sender);
 
         # Members list synchronization if include is in use
         if ($list->has_include_data_sources()) {
@@ -592,8 +569,7 @@ sub getSubscribers($$) {
 
 		do {
             # Owners bypass the visibility option
-            unless (($user->{'visibility'} eq 'conceal')
-                and (!$is_owner)) {
+            unless ( ($user->{'visibility'} eq 'conceal') and (!$is_owner) ) {
 
                 # Lower case email address
                 $user->{'email'} =~ y/A-Z/a-z/;
@@ -752,16 +728,14 @@ sub addSubscriber($$) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 		my $gecos = $subscriber->{gecos} || '';
-		# encode UTF8 submitted data
-		#$gecos = &Encode::encode('UTF8', $gecos);
-		# without encode hÃ¼Ã¶Ã¤  | hÃ¼Ã¶Ã¤
-		# with encode hÃÂ¼ÃÂ¶ÃÂ¤   | 
-		#$gecos = &Encode::decode('UTF8', $gecos);
-		# with decode hüöä
-		# TODO: folgende zeile noch nötig???
+		# TODO:
+		# Encode::decode is needed to have correct encoding in sympa-soap11 (getSubscriber)
+		# in setups using CentOS7, system Perl, sympa from epel, sopa11 dependencies installed with cpanm
+		# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
 		$gecos = &Encode::decode('UTF8', $gecos);
-		#FIXME: nein, das wohl alles ok so jetzt
-		#FIXME: mh, 7.10.19 es braucht doch die zeile jetzt. Warum? Perl mit perlbrew vs. rpm perl????
+		# TODO:  compare createList
+		# there only system perl must use Encode::decode
+
 
 		# TODO: from old version, stil valid??
 		# WARNING: without little patch to sympa mail.pm the welcome mail will be horrible broken
@@ -860,7 +834,6 @@ sub unsubscribeSubscriber($$) {
 		my $email = $subscriber->{email} || '';
 
 	 	my $status = '';
-
 		$sender = $email;
 
 		my $spindle = Sympa::Spindle::ProcessRequest->new(
@@ -1052,8 +1025,7 @@ sub getSubscriptions($$) {
 
         # determine status of user
         $result_item->{'owner'} = 0;
-        if ($list->is_admin('owner', $email)
-            or Sympa::is_listmaster($list, $email)) {
+        if ( $list->is_admin('owner', $email) or Sympa::is_listmaster($list, $email) ) {
             $result_item->{'owner'} = 1;
         }
         $result_item->{'editor'} = 0;
@@ -1111,7 +1083,7 @@ sub getAdmins($$) {
 
 	# return forbidden if not authorized 
 	# FIXME: nur role owner allowed? check may_edit; now editors also are able to list
-	unless ($list->is_admin($role, $sender) || Sympa::is_listmaster($list, $sender)) {
+	unless ( $list->is_admin($role, $sender) || Sympa::is_listmaster($list, $sender) ) {
 		$log->syslog('info', 'Review %s of list %s@%s not allowed for %s', $role, $listname, $robot, $sender);
 		return Sympa::WWW::SOAP11::Error::forbidden()
 	}
@@ -1366,7 +1338,6 @@ sub delAdmins($$) {
 
 	# get fresh admin objects 
 	foreach my $email ( @{$in->{delAdminsRequest}{email}} ) {
-		#my $email = $admin->{email} || '';
 		push @result, { email => $email,
 						status => $status{$email},
 					}; 
