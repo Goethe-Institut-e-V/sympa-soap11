@@ -656,7 +656,7 @@
 	</xsd:complexType>
  
 
-	<xsd:complexType name="ListType">
+	<xsd:complexType name="MailinglistType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
 				<xsd:annotation>
@@ -828,7 +828,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="0" name="list" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="0" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
 							Return list details for this %list% pattern. Or for all lists if not specified.
@@ -864,7 +864,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="unbounded" minOccurs="0" name="list" type="xsd:string"/>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="listname" type="xsd:string"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -879,7 +879,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="0" name="list" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="0" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>
 							Return list details for this list. Or for all lists if list is not specified.
@@ -898,7 +898,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="unbounded" minOccurs="0" name="list" type="sym:ListType"/>
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="listname" type="sym:MailinglistType"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -913,7 +913,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="sym:ListnameType">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="sym:ListnameType">
 					<xsd:annotation>
 						<xsd:documentation>The name of the list</xsd:documentation>
 					</xsd:annotation>
@@ -933,7 +933,7 @@
 						<xsd:documentation>A short description for the list</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element default="" maxOccurs="1" minOccurs="0" name="topics" type="xsd:string">
+				<xsd:element default="" maxOccurs="1" minOccurs="0" name="topic" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>A topic for the list</xsd:documentation>
 					</xsd:annotation>
@@ -968,7 +968,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to query</xsd:documentation>
 					</xsd:annotation>
@@ -992,7 +992,7 @@
 
 
 
-	<xsd:element name="subscribeSubscriberRequest">
+	<xsd:element name="subscribeSubscribersRequest">
 		<xsd:annotation>
 			<xsd:documentation>
 				Subscribe subscriber(s) to a list. They get notified and need to double-opt-in.
@@ -1000,7 +1000,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to subscribe to</xsd:documentation>
 					</xsd:annotation>
@@ -1025,7 +1025,7 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="subscribeSubscriberResponse">
+	<xsd:element name="subscribeSubscribersResponse">
 		<xsd:annotation>
 			<xsd:documentation>
 				Returns status of subscription and parameters for each new user (subscriber).
@@ -1055,7 +1055,7 @@
 
 
 
-	<xsd:element name="addSubscriberRequest">
+	<xsd:element name="addSubscribersRequest">
 		<xsd:annotation>
 			<xsd:documentation>
 				Add subscriber(s) to a list.
@@ -1063,7 +1063,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to subscribe to</xsd:documentation>
 					</xsd:annotation>
@@ -1096,7 +1096,7 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="addSubscriberResponse">
+	<xsd:element name="addSubscribersResponse">
 		<xsd:annotation>
 			<xsd:documentation>
 				Returns status of subscription and parameters for each new user (subscriber).
@@ -1126,7 +1126,7 @@
  
  
 
-	<xsd:element name="unsubscribeSubscriberRequest">
+	<xsd:element name="unsubscribeSubscribersRequest">
 		<xsd:annotation>
 			<xsd:documentation>
 				Unsubscriber(s) from list.
@@ -1134,7 +1134,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to unsubscribe users from</xsd:documentation>
 					</xsd:annotation>
@@ -1154,7 +1154,7 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="unsubscribeSubscriberResponse">
+	<xsd:element name="unsubscribeSubscribersResponse">
 		<xsd:annotation>
 			<xsd:documentation>
 				Returns status of removal for each subscriber.
@@ -1184,7 +1184,7 @@
 
 
 
-	<xsd:element name="delSubscriberRequest">
+	<xsd:element name="delSubscribersRequest">
 		<xsd:annotation>
 			<xsd:documentation>
 				Removes subscriber(s) from list.
@@ -1192,7 +1192,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to remove users from</xsd:documentation>
 					</xsd:annotation>
@@ -1220,7 +1220,7 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="delSubscriberResponse">
+	<xsd:element name="delSubscribersResponse">
 		<xsd:annotation>
 			<xsd:documentation>
 				Returns status of removal for each subscriber.
@@ -1275,7 +1275,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="unbounded" minOccurs="0" name="list">
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="listname">
 					<xsd:complexType>
 						<xsd:sequence>
 							<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string"/>
@@ -1302,7 +1302,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to query</xsd:documentation>
 					</xsd:annotation>
@@ -1339,7 +1339,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to add admins to</xsd:documentation>
 					</xsd:annotation>
@@ -1399,7 +1399,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>List to remove owner from</xsd:documentation>
 					</xsd:annotation>
@@ -1500,7 +1500,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>Name of the list to close.</xsd:documentation>
 					</xsd:annotation>
@@ -1531,7 +1531,7 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element maxOccurs="1" minOccurs="1" name="name" type="xsd:string">
+				<xsd:element maxOccurs="1" minOccurs="1" name="listname" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation>Name of the list to delete.</xsd:documentation>
 					</xsd:annotation>
@@ -3146,16 +3146,20 @@
     <wsdl:part element="sch:getAdminsResponse" name="getAdminsResponse">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="subscribeSubscriberResponse">
-    <wsdl:part element="sch:subscribeSubscriberResponse" name="subscribeSubscriberResponse">
-    </wsdl:part>
-  </wsdl:message>
   <wsdl:message name="getSubscriptionsRequest">
     <wsdl:part element="sch:getSubscriptionsRequest" name="getSubscriptionsRequest">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="unsubscribeSubscribersResponse">
+    <wsdl:part element="sch:unsubscribeSubscribersResponse" name="unsubscribeSubscribersResponse">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="getRobotsResponse">
     <wsdl:part element="sch:getRobotsResponse" name="getRobotsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="delSubscribersResponse">
+    <wsdl:part element="sch:delSubscribersResponse" name="delSubscribersResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="getVersionResponse">
@@ -3168,6 +3172,10 @@
   </wsdl:message>
   <wsdl:message name="changeEmailResponse">
     <wsdl:part element="sch:changeEmailResponse" name="changeEmailResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="delSubscribersRequest">
+    <wsdl:part element="sch:delSubscribersRequest" name="delSubscribersRequest">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="delAdminsResponse">
@@ -3186,10 +3194,6 @@
     <wsdl:part element="sch:createListResponse" name="createListResponse">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="addSubscriberResponse">
-    <wsdl:part element="sch:addSubscriberResponse" name="addSubscriberResponse">
-    </wsdl:part>
-  </wsdl:message>
   <wsdl:message name="getListTemplatesResponse">
     <wsdl:part element="sch:getListTemplatesResponse" name="getListTemplatesResponse">
     </wsdl:part>
@@ -3202,16 +3206,16 @@
     <wsdl:part element="sch:closeListRequest" name="closeListRequest">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="addSubscriberRequest">
-    <wsdl:part element="sch:addSubscriberRequest" name="addSubscriberRequest">
+  <wsdl:message name="unsubscribeSubscribersRequest">
+    <wsdl:part element="sch:unsubscribeSubscribersRequest" name="unsubscribeSubscribersRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="subscribeSubscribersResponse">
+    <wsdl:part element="sch:subscribeSubscribersResponse" name="subscribeSubscribersResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="closeListResponse">
     <wsdl:part element="sch:closeListResponse" name="closeListResponse">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="delSubscriberRequest">
-    <wsdl:part element="sch:delSubscriberRequest" name="delSubscriberRequest">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="getListRequest">
@@ -3230,10 +3234,6 @@
     <wsdl:part element="sch:getSubscribersRequest" name="getSubscribersRequest">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="delSubscriberResponse">
-    <wsdl:part element="sch:delSubscriberResponse" name="delSubscriberResponse">
-    </wsdl:part>
-  </wsdl:message>
   <wsdl:message name="getSubscriptionsResponse">
     <wsdl:part element="sch:getSubscriptionsResponse" name="getSubscriptionsResponse">
     </wsdl:part>
@@ -3246,16 +3246,12 @@
     <wsdl:part element="sch:changeEmailRequest" name="changeEmailRequest">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="subscribeSubscriberRequest">
-    <wsdl:part element="sch:subscribeSubscriberRequest" name="subscribeSubscriberRequest">
-    </wsdl:part>
-  </wsdl:message>
   <wsdl:message name="createListRequest">
     <wsdl:part element="sch:createListRequest" name="createListRequest">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="unsubscribeSubscriberResponse">
-    <wsdl:part element="sch:unsubscribeSubscriberResponse" name="unsubscribeSubscriberResponse">
+  <wsdl:message name="subscribeSubscribersRequest">
+    <wsdl:part element="sch:subscribeSubscribersRequest" name="subscribeSubscribersRequest">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="addAdminsResponse">
@@ -3266,12 +3262,16 @@
     <wsdl:part element="sch:getVersionRequest" name="getVersionRequest">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="unsubscribeSubscriberRequest">
-    <wsdl:part element="sch:unsubscribeSubscriberRequest" name="unsubscribeSubscriberRequest">
+  <wsdl:message name="addSubscribersResponse">
+    <wsdl:part element="sch:addSubscribersResponse" name="addSubscribersResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="getListTemplatesRequest">
     <wsdl:part element="sch:getListTemplatesRequest" name="getListTemplatesRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addSubscribersRequest">
+    <wsdl:part element="sch:addSubscribersRequest" name="addSubscribersRequest">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="getSubscribersResponse">
@@ -3295,16 +3295,22 @@
       <wsdl:output message="tns:getAdminsResponse" name="getAdminsResponse">
     </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="subscribeSubscriber">
-      <wsdl:input message="tns:subscribeSubscriberRequest" name="subscribeSubscriberRequest">
-    </wsdl:input>
-      <wsdl:output message="tns:subscribeSubscriberResponse" name="subscribeSubscriberResponse">
-    </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="getSubscriptions">
       <wsdl:input message="tns:getSubscriptionsRequest" name="getSubscriptionsRequest">
     </wsdl:input>
       <wsdl:output message="tns:getSubscriptionsResponse" name="getSubscriptionsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unsubscribeSubscribers">
+      <wsdl:input message="tns:unsubscribeSubscribersRequest" name="unsubscribeSubscribersRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:unsubscribeSubscribersResponse" name="unsubscribeSubscribersResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="delSubscribers">
+      <wsdl:input message="tns:delSubscribersRequest" name="delSubscribersRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:delSubscribersResponse" name="delSubscribersResponse">
     </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="getVersion">
@@ -3343,12 +3349,6 @@
       <wsdl:output message="tns:createListResponse" name="createListResponse">
     </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="addSubscriber">
-      <wsdl:input message="tns:addSubscriberRequest" name="addSubscriberRequest">
-    </wsdl:input>
-      <wsdl:output message="tns:addSubscriberResponse" name="addSubscriberResponse">
-    </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="getListTemplates">
       <wsdl:input message="tns:getListTemplatesRequest" name="getListTemplatesRequest">
     </wsdl:input>
@@ -3361,10 +3361,10 @@
       <wsdl:output message="tns:closeListResponse" name="closeListResponse">
     </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="delSubscriber">
-      <wsdl:input message="tns:delSubscriberRequest" name="delSubscriberRequest">
+    <wsdl:operation name="subscribeSubscribers">
+      <wsdl:input message="tns:subscribeSubscribersRequest" name="subscribeSubscribersRequest">
     </wsdl:input>
-      <wsdl:output message="tns:delSubscriberResponse" name="delSubscriberResponse">
+      <wsdl:output message="tns:subscribeSubscribersResponse" name="subscribeSubscribersResponse">
     </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="getList">
@@ -3385,10 +3385,10 @@
       <wsdl:output message="tns:getSubscribersResponse" name="getSubscribersResponse">
     </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="unsubscribeSubscriber">
-      <wsdl:input message="tns:unsubscribeSubscriberRequest" name="unsubscribeSubscriberRequest">
+    <wsdl:operation name="addSubscribers">
+      <wsdl:input message="tns:addSubscribersRequest" name="addSubscribersRequest">
     </wsdl:input>
-      <wsdl:output message="tns:unsubscribeSubscriberResponse" name="unsubscribeSubscriberResponse">
+      <wsdl:output message="tns:addSubscribersResponse" name="addSubscribersResponse">
     </wsdl:output>
     </wsdl:operation>
   </wsdl:portType>
@@ -3412,21 +3412,30 @@
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="subscribeSubscriber">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="subscribeSubscriberRequest">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="subscribeSubscriberResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="getSubscriptions">
       <soap:operation soapAction=""/>
       <wsdl:input name="getSubscriptionsRequest">
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="getSubscriptionsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="unsubscribeSubscribers">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="unsubscribeSubscribersRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="unsubscribeSubscribersResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="delSubscribers">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="delSubscribersRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="delSubscribersResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
@@ -3484,15 +3493,6 @@
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="addSubscriber">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="addSubscriberRequest">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="addSubscriberResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="getListTemplates">
       <soap:operation soapAction=""/>
       <wsdl:input name="getListTemplatesRequest">
@@ -3511,12 +3511,12 @@
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="delSubscriber">
+    <wsdl:operation name="subscribeSubscribers">
       <soap:operation soapAction=""/>
-      <wsdl:input name="delSubscriberRequest">
+      <wsdl:input name="subscribeSubscribersRequest">
         <soap:body use="literal"/>
       </wsdl:input>
-      <wsdl:output name="delSubscriberResponse">
+      <wsdl:output name="subscribeSubscribersResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
@@ -3547,12 +3547,12 @@
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="unsubscribeSubscriber">
+    <wsdl:operation name="addSubscribers">
       <soap:operation soapAction=""/>
-      <wsdl:input name="unsubscribeSubscriberRequest">
+      <wsdl:input name="addSubscribersRequest">
         <soap:body use="literal"/>
       </wsdl:input>
-      <wsdl:output name="unsubscribeSubscriberResponse">
+      <wsdl:output name="addSubscribersResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>

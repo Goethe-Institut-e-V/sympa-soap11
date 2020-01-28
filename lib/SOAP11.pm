@@ -219,7 +219,7 @@ sub getLists($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{getListsRequest}{list} || '';
+	my $listname = $in->{getListsRequest}{listname} || '';
 	my $topic = $in->{getListsRequest}{topic} || '';
 	$log->syslog('info', 'list-pattern: %s, topic: %s; user: %s', $listname, $topic, $ENV{'USER_EMAIL'});
 	
@@ -246,8 +246,8 @@ sub getLists($$) {
 	}
 	
 	# return 
-	$log->syslog('debug2', 'RESULT: %s', Dumper (list => \@result));
-	return { list => \@result };
+	$log->syslog('debug2', 'RESULT: %s', Dumper (listname => \@result));
+	return { listname => \@result };
 }
 
 
@@ -267,7 +267,7 @@ sub getList($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{getListRequest}{list} || '';
+	my $listname = $in->{getListRequest}{listname} || '';
 	$log->syslog('info', 'list: %s; user: %s', $listname, $ENV{'USER_EMAIL'});
 	
 	my @result;
@@ -336,8 +336,8 @@ sub getList($$) {
 	}
 	
 	# return 
-	$log->syslog('debug2', 'RESULT: %s', Dumper (list => \@result));
-	return { list => \@result };
+	$log->syslog('debug2', 'RESULT: %s', Dumper (listname => \@result));
+	return { listname => \@result };
 }
 
 
@@ -357,11 +357,11 @@ sub createList($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname  = $in->{createListRequest}{name};
+	my $listname  = $in->{createListRequest}{listname};
 	my $subject = $in->{createListRequest}{subject};
 	my $list_tpl =  $in->{createListRequest}{template};
 	my $description =  $in->{createListRequest}{description};
-	my $topics =  $in->{createListRequest}{topics};
+	my $topics =  $in->{createListRequest}{topic};
 	# topics is mandatory in sympa
 	$topics = 'other' unless $topics;
 	my $lang =  $in->{createListRequest}{lang};
@@ -371,7 +371,7 @@ sub createList($$) {
 	#$subject = &Encode::decode('UTF8', $subject);
 	# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
 	# Encode::decode breaks encoding
-	# TODO:  compare addSubscriber
+	# TODO:  compare addSubscribers
 	# there _with_ perlbrew Encode::decode is needed
 
     my $sender                  = $ENV{'USER_EMAIL'};
@@ -512,7 +512,7 @@ sub getSubscribers($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{getSubscribersRequest}{name} || '';
+	my $listname = $in->{getSubscribersRequest}{listname} || '';
 
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -593,7 +593,7 @@ sub getSubscribers($$) {
 
 
 #
-# subscribeSubscriber
+# subscribeSubscribers
 #	"do_subscribe" in wwsympa.fcgi
 #	subscribe a subscriber to a list (with double opt in)
 #   Note:
@@ -601,7 +601,7 @@ sub getSubscribers($$) {
 #     - sympas default request_auth.tt2 template needs to be adjusted as it checks for conf.wwsympa_url set
 #       and than omits the email reply part
 #
-sub subscribeSubscriber($$) {
+sub subscribeSubscribers($$) {
 	my ($server, $in) = @_;
 	
 	# check auth
@@ -610,7 +610,7 @@ sub subscribeSubscriber($$) {
 	$ENV{'SYMPA_SOAP'} = 0;
 
 	# get parameters
-	my $listname = $in->{subscribeSubscriberRequest}{name} || '';
+	my $listname = $in->{subscribeSubscribersRequest}{listname} || '';
 
 	# sender MUST not be an admin, 'nobody' is also not what we want
     my $sender                  = undef; 
@@ -629,7 +629,7 @@ sub subscribeSubscriber($$) {
 	my $total_sub = 0;
 	my $ok_sub = 0;
 	# data for each Subscriber
-	foreach my $subscriber ( @{$in->{subscribeSubscriberRequest}{subscriber}} ) {
+	foreach my $subscriber ( @{$in->{subscribeSubscribersRequest}{subscriber}} ) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 		my $gecos = $subscriber->{gecos} || '';
@@ -684,7 +684,7 @@ sub subscribeSubscriber($$) {
 
 	my $fail_sub = $total_sub - $ok_sub;
 
-	$log->syslog('debug2', 'subscribeSubscriber result: %s', Dumper \@result );
+	$log->syslog('debug2', 'subscribeSubscribers result: %s', Dumper \@result );
 	return { result => { subscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
 }
 
@@ -692,11 +692,11 @@ sub subscribeSubscriber($$) {
 
 
 #
-# addSubscriber
+# addSubscribers
 #	"add" in sympasoap
 #	adds a subscriber to a list (without double opt in!)
 #
-sub addSubscriber($$) {
+sub addSubscribers($$) {
 	my ($server, $in) = @_;
 	
 	# check auth
@@ -704,8 +704,8 @@ sub addSubscriber($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{addSubscriberRequest}{name} || '';
-	my $quiet = $in->{addSubscriberRequest}{quiet} || 0;
+	my $listname = $in->{addSubscribersRequest}{listname} || '';
+	my $quiet = $in->{addSubscribersRequest}{quiet} || 0;
 
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -724,12 +724,12 @@ sub addSubscriber($$) {
 	my $total_sub = 0;
 	my $ok_sub = 0;
 	# data for each Subscriber
-	foreach my $subscriber ( @{$in->{addSubscriberRequest}{subscriber}} ) {
+	foreach my $subscriber ( @{$in->{addSubscribersRequest}{subscriber}} ) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 		my $gecos = $subscriber->{gecos} || '';
 		# TODO:
-		# Encode::decode is needed to have correct encoding in sympa-soap11 (getSubscriber)
+		# Encode::decode is needed to have correct encoding in sympa-soap11 (getSubscribers)
 		# in setups using CentOS7, system Perl, sympa from epel, sopa11 dependencies installed with cpanm
 		# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
 		$gecos = &Encode::decode('UTF8', $gecos);
@@ -787,7 +787,7 @@ sub addSubscriber($$) {
 
 	my $fail_sub = $total_sub - $ok_sub;
 
-	$log->syslog('debug2', 'addSubscriber result: %s', Dumper \@result );
+	$log->syslog('debug2', 'addSubscribers result: %s', Dumper \@result );
 	return { result => { subscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
 }
 
@@ -795,7 +795,7 @@ sub addSubscriber($$) {
 
 
 #
-# unsubscribeSubscriber
+# unsubscribeSubscribers
 #	do_signoff in wwsympa.fcgi
 #	unsubsribes a subscriber from a list (with his approval)
 #   Note:
@@ -803,7 +803,7 @@ sub addSubscriber($$) {
 #     - sympas default request_auth.tt2 template needs to be adjusted as it checks for conf.wwsympa_url set
 #       and than omits the email reply part
 #
-sub unsubscribeSubscriber($$) {
+sub unsubscribeSubscribers($$) {
 	my ($server, $in) = @_;
 
 	# check auth
@@ -811,7 +811,7 @@ sub unsubscribeSubscriber($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{unsubscribeSubscriberRequest}{name} || '';
+	my $listname = $in->{unsubscribeSubscribersRequest}{listname} || '';
 
     my $sender                  = undef;
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -829,7 +829,7 @@ sub unsubscribeSubscriber($$) {
 	my $total_sub = 0;
 	my $ok_sub = 0;
 	# data for each Subscriber
-	foreach my $subscriber ( @{$in->{unsubscribeSubscriberRequest}{subscriber}} ) {
+	foreach my $subscriber ( @{$in->{unsubscribeSubscribersRequest}{subscriber}} ) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 
@@ -877,7 +877,7 @@ sub unsubscribeSubscriber($$) {
 
 	my $fail_sub = $total_sub - $ok_sub;
 
-	$log->syslog('debug2', 'unsubscribeSubscriber result: %s', Dumper \@result );
+	$log->syslog('debug2', 'unsubscribeSubscribers result: %s', Dumper \@result );
 	return { result => { unsubscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
 }
 
@@ -885,11 +885,11 @@ sub unsubscribeSubscriber($$) {
 
 
 #
-# delSubscriber
+# delSubscribers
 #	"del" in sympasoap
 #	removees a subscriber from a list (without double opt out!)
 #
-sub delSubscriber($$) {
+sub delSubscribers($$) {
 	my ($server, $in) = @_;
 
 	# check auth
@@ -897,8 +897,8 @@ sub delSubscriber($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{delSubscriberRequest}{name} || '';
-	my $quiet = $in->{delSubscriberRequest}{quiet} || 0;
+	my $listname = $in->{delSubscribersRequest}{listname} || '';
+	my $quiet = $in->{delSubscribersRequest}{quiet} || 0;
 
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -916,7 +916,7 @@ sub delSubscriber($$) {
 	my $total_sub = 0;
 	my $ok_sub = 0;
 	# data for each Subscriber
-	foreach my $subscriber ( @{$in->{delSubscriberRequest}{subscriber}} ) {
+	foreach my $subscriber ( @{$in->{delSubscribersRequest}{subscriber}} ) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 
@@ -967,7 +967,7 @@ sub delSubscriber($$) {
 
 	my $fail_sub = $total_sub - $ok_sub;
 
-	$log->syslog('debug2', 'delSubscriber result: %s', Dumper \@result );
+	$log->syslog('debug2', 'delSubscribers result: %s', Dumper \@result );
 	return { result => { unsubscribed => $ok_sub, failed => $fail_sub }, subscriber => \@result };
 }
 
@@ -1050,7 +1050,7 @@ sub getSubscriptions($$) {
 	}
 
 	$log->syslog('debug2', 'getSubscriptions: %s', Dumper \@result);
-   	return { list => \@result };
+   	return { listname => \@result };
 }
 
 
@@ -1069,7 +1069,7 @@ sub getAdmins($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{getAdminsRequest}{name} || '';
+	my $listname = $in->{getAdminsRequest}{listname} || '';
 	my $role = $in->{getAdminsRequest}{role} || '';
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -1113,7 +1113,7 @@ sub addAdmins($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{addAdminsRequest}{name} || '';
+	my $listname = $in->{addAdminsRequest}{listname} || '';
 	my $role = $in->{addAdminsRequest}{role} || '';
 	my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -1223,7 +1223,7 @@ sub delAdmins($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{delAdminsRequest}{name} || '';
+	my $listname = $in->{delAdminsRequest}{listname} || '';
 	my $role = $in->{delAdminsRequest}{role} || '';
 	my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -1449,7 +1449,7 @@ sub closeList($$) {
 #
 sub deleteList($$) {
 	my ($server, $in) = @_;
-	$in->{closeListRequest}{name} = $in->{deleteListRequest}{name};
+	$in->{closeListRequest}{listname} = $in->{deleteListRequest}{listname};
 	$in->{closeListRequest}{mode} = 'purge';
 	_closeList($server, $in);
 }
@@ -1468,7 +1468,7 @@ sub _closeList($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{closeListRequest}{name} || '';
+	my $listname = $in->{closeListRequest}{listname} || '';
 	my $mode = $in->{closeListRequest}{mode} || 'close';
 	my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -1545,7 +1545,7 @@ sub getListDefinition($$) {
 	if not checkAuth($in);
 
 	# get parameters
-	my $listname = $in->{getListDefinitionRequest}{name} || '';
+	my $listname = $in->{getListDefinitionRequest}{listname} || '';
 	my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
 
