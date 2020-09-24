@@ -98,6 +98,7 @@
 				<xsd:annotation>
 					<xsd:documentation>
 						Benachrichtigungsmodus (notice)
+						Receiving message subject only
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
