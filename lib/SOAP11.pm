@@ -1071,6 +1071,7 @@ sub getAdmins($$) {
 	# get parameters
 	my $listname = $in->{getAdminsRequest}{listname} || '';
 	my $role = $in->{getAdminsRequest}{role} || '';
+	my $authrole = $in->{getAdminsRequest}{role} || 'owner';
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
 
@@ -1083,14 +1084,21 @@ sub getAdmins($$) {
 
 	# return forbidden if not authorized 
 	# FIXME: nur role owner allowed? check may_edit; now editors also are able to list
-	unless ( $list->is_admin($role, $sender) || Sympa::is_listmaster($list, $sender) ) {
+	unless ( $list->is_admin($authrole, $sender) || Sympa::is_listmaster($list, $sender) ) {
 		$log->syslog('info', 'Review %s of list %s@%s not allowed for %s', $role, $listname, $robot, $sender);
 		return Sympa::WWW::SOAP11::Error::forbidden()
 	}
 
-	#TODO: do we need distinction to privileged_owner?
-	# get owners
-	my $result = $list->get_admins($role);
+	# get admins per role
+	my $result;
+	if ( $role ) {
+		$result = $list->get_admins($role);
+	} else {
+		# or get all owners and editors
+		$result = $list->get_admins('owner');
+		my $editors = $list->get_admins('editor');
+		push(@$result, @$editors);
+	}
 
 	$log->syslog('debug2', Dumper $result);
 	return { admin => $result };

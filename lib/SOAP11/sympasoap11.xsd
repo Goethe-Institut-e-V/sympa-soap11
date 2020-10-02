@@ -1312,7 +1312,7 @@
 						<xsd:documentation>List to query</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element name="role" type="sym:ExtendedRoleType" minOccurs="1" maxOccurs="1">
+				<xsd:element name="role" type="sym:ExtendedRoleType" minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation>Admin type</xsd:documentation>
 					</xsd:annotation>
