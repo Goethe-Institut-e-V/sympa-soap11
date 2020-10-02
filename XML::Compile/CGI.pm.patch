@@ -1,0 +1,39 @@
+--- CGI.pm.org	2018-05-11 01:05:25.000000000 +0200
++++ CGI.pm	2019-04-10 13:27:32.534563277 +0200
+@@ -43,7 +43,7 @@
+     my $ct     = $ENV{CONTENT_TYPE}   || 'text/plain';
+     $ct =~ s/\;\s.*//;
+ 
+-    return $self->sendWsdl($q)
++    return $self->sendWsdl($q, $args->{nph})
+         if $method eq 'GET' && uc($qs) eq 'WSDL';
+ 
+     my ($rc, $msg, $err, $mime, $bytes);
+@@ -80,7 +80,7 @@
+       ( -status  => "$rc $msg"
+       , -type    => $mime
+       , -charset => 'utf-8'
+-      , -nph     => ($args->{nph} ? 1 : 0)
++      , -nph     => $args->{nph}
+       );
+ 
+     if(my $pp = $args->{postprocess})
+@@ -104,15 +104,14 @@
+     close WSDL;
+ }
+ 
+-sub sendWsdl($)
+-{   my ($self, $q) = @_;
++sub sendWsdl($;$)
++{   my ($self, $q, $nph) = @_;
+ 
+     print $q->header
+       ( -status  => RC_OK.' WSDL specification'
+       , -type    => $self->{wsdl_type}
+       , -charset => 'utf-8'
+-      , -nph     => 1
+-
++      , -nph     => $nph
+       , -Content_length => length($self->{wsdl_data})
+       );
+ 

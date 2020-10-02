@@ -1,0 +1,15 @@
+--- XML/Compile/SOAP/Server.pm.org	2018-03-06 08:12:35.000000000 +0100
++++ XML/Compile/SOAP/Server.pm	2019-09-23 12:58:12.000000000 +0200
+@@ -62,9 +62,10 @@
+         if($decode)
+         {   $data = try { $decode->($xmlin) };
+             if($@)
+-            {   $@->wasFatal->throw(reason => 'INFO', is_fatal => 0);
++            {   my $fatal = $@->wasFatal;
++                $fatal->throw(reason => 'INFO', is_fatal => 0);
+                 return ( RC_NOT_ACCEPTABLE, 'input validation failed'
+-                   , $self->faultValidationFailed($name, $@->wasFatal))
++                   , $self->faultValidationFailed($name, $fatal))
+             }
+         }
+         else
