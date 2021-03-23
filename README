@@ -24,6 +24,11 @@ To install this module, run the following commands:
 	./Build test
 	./Build install
 
+DEBUGGING
+	./Build clean
+	./Build install
+	/usr/bin/spawn-fcgi -n -F 1 -P /run/sympa/sympasoap11.pid -s /run/sympa/sympasoap11.socket -u sympa -g sympa -M 0600 -U apache -- /usr/libexec/sympa/sympasoap11.fcgi
+
 SUPPORT AND DOCUMENTATION
 
 After installing, you can find documentation for this module with the

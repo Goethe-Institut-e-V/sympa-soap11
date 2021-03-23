@@ -46,3 +46,6 @@ SYMPA.RPM
 TODO
 TEST
 XTR
+
+*.old
+*.org
