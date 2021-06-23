@@ -865,12 +865,15 @@ sub unsubscribeSubscribers($$) {
 				next;
 			} elsif ($report->[1] eq 'notice') {
 				push @result, { email => $email, status => 'OK. ' . $reason_string };
-				$ok_sub++;
 				next;
 			} elsif ($report->[1] eq 'user') {
 				push @result, { email => $email, status => 'Undef. ' . $reason_string };
 				next;
 			}
+		}
+
+		unless (@{$spindle->{stash} || []}) {
+			$ok_sub++;
 		}
 
 	}
