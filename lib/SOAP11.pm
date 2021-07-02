@@ -1110,6 +1110,15 @@ sub getAdmins($$) {
 		push(@$result, @$editors);
 	}
 
+	# get rid of error "XML::Compile::Translate::Writer unused tags	..."
+	#$log->syslog('debug2', Dumper $result);
+	foreach my $key (@$result) {
+		#$log->syslog('debug2', Dumper $key);
+		delete $key->{inclusion};
+		delete $key->{inclusion_ext};
+		delete $key->{inclusion_label};
+	}
+
 	$log->syslog('debug2', Dumper $result);
 	return { admin => $result };
 }
@@ -1216,6 +1225,11 @@ sub addAdmins($$) {
 						status => $status{$email},
 						admin => $list->get_admins($role, filter => [email => $email])
 					}; 
+		# get rid of error "XML::Compile::Translate::Writer unused tags	..."
+        #$log->syslog('debug2','result: %s', Dumper @result[-1]);
+        delete @result[-1]->{admin}->{inclusion};
+        delete @result[-1]->{admin}->{inclusion_ext};
+        delete @result[-1]->{admin}->{inclusion_label};
 	}
 
 	my $fail_add = $total_add - $ok_add;
