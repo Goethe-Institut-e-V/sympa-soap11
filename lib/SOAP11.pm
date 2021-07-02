@@ -1,7 +1,7 @@
 # SOAP 1.1 / WSSE compliant interface for
 # Sympa - SYsteme de Multi-Postage Automatique
 #
-# Copyright 2013-2020 Goethe-Institut e.V.
+# Copyright 2013-2021 Goethe-Institut e.V.
 # Immo Goltz <immo.goltz@goethe.de>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,8 @@ use Sympa::Scenario;
 use Sympa::WWW::Auth;
 
 # SOAP11
-my $VERSION = '0.5.0'; # Module::Build reads this line
-use constant VERSION => '0.5.0';
+use constant VERSION => '0.6.0';
+my $VERSION = Sympa::WWW::SOAP11::VERSION; # Module::Build reads this line
 use Sympa::WWW::SOAP11::Error;
 
 # debugging
@@ -84,6 +84,17 @@ sub checkAuth($) {
 		# return unauthenticated
 		return 0;
 	}
+#} elsif (Sympa::WWW::Report::is_there_any_reject_report_web()) {
+                ### for compatibility : it could be better
+                #my $intern = Sympa::WWW::Report::get_intern_error_web();
+                #my $system = Sympa::WWW::Report::get_system_error_web();
+                #my $user   = Sympa::WWW::Report::get_user_error_web();
+                #}
+                #if (ref($user) eq 'ARRAY') {
+                    #foreach my $err (@$user) {
+                     #   printf "ERROR : %s\n", $err;
+                    #}
+                #}					
 
 	$ENV{'USER_EMAIL'} = $email;
    	$log->syslog('debug', "login authentication OK");
@@ -389,8 +400,8 @@ sub createList($$) {
     my $spindle = Sympa::Spindle::ProcessRequest->new(
         context    => $robot,
         action     => 'create_list',
-        listname   => $listname,
         parameters => {
+	        listname   => $listname,
             owner => [
                 {   email => $sender,
                     gecos => ($user ? $user->{gecos} : undef),
@@ -398,10 +409,12 @@ sub createList($$) {
             ],
             subject        => $subject,
             creation_email => $sender,
-            template       => $list_tpl,
+			lang           => $lang,
+			#status           => $param->{'status'}, 
+            type           => $list_tpl,
             topics         => $topics,
             description    => $description,
-			lang           => $lang,
+			#custom_input   => $in{'custom_input'},
         },
         sender    => $sender,
         md5_check => 1,
@@ -415,7 +428,6 @@ sub createList($$) {
             'candidate_topics'        => $topics,
             #'remote_host'             => $ENV{'REMOTE_HOST'},
             #'remote_addr'             => $ENV{'REMOTE_ADDR'},
-            #'remote_application_name' => 'soap11'
         }
     );
 
@@ -681,6 +693,8 @@ sub subscribeSubscribers($$) {
 		}
 
 	}
+
+	#TODO: keine Info in soap wenn Liste nicht subscribbar (wo mail an listadmin rausgeht aber)
 
 	my $fail_sub = $total_sub - $ok_sub;
 
