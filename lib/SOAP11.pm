@@ -59,7 +59,7 @@ sub checkAuth($) {
   
 	# Set ENV marking SOAP context
 	# Used in Auth.pm only, then skipping Sympa::WWW::Report::reject_report_web() call
-  	# TODO: really needed?
+	# TODO: really needed? Maybe better error handling without (check Sympa::WWW::Report::reject_report_web)
 	$ENV{'SYMPA_SOAP'} = 1;
 
 	# user/credentials from wsse
@@ -376,14 +376,17 @@ sub createList($$) {
 	# topics is mandatory in sympa
 	$topics = 'other' unless $topics;
 	my $lang =  $in->{createListRequest}{lang};
-	# FIXME:
+	# NOTE:
 	# Encode::decode is needed to have correct encoding in saved list description file, in web gui and sympa-soap11 (getList)
 	# in setups using CentOS7, system Perl, sympa from epel, sopa11 dependencies installed with cpanm
 	#$subject = &Encode::decode('UTF8', $subject);
-	# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
 	# Encode::decode breaks encoding
-	# TODO:  compare addSubscribers
+	# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
+	# NOTE: compare addSubscribers
 	# there _with_ perlbrew Encode::decode is needed
+
+	# NOTE: in old Sympa versions 6.1.x without little patch to sympa mail.pm the welcome mail was horrible broken
+	# if subject/info of list was UTF8 (maybe only if lang of list was cyrillic)
 
     my $sender                  = $ENV{'USER_EMAIL'};
     my $robot                   = $ENV{'SYMPA_ROBOT'};
@@ -466,11 +469,6 @@ sub createList($$) {
 }
 
 
-#FIXME:
-# right after start we get <faultstring>'liste-999' list already exists</faultstring>,
-# but later on we get translated message, e.g. <sch:status>Undef. Почтовый адрес  не был найден в рассылке .</sch:status>
-# for a list with lang ru-RU
-# TODO: always respond here with english message
 #
 # helper function to translate with tt2 files
 #   used (at least) in createList
@@ -742,19 +740,13 @@ sub addSubscribers($$) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 		my $gecos = $subscriber->{gecos} || '';
-		# TODO:
-		# Encode::decode is needed to have correct encoding in sympa-soap11 (getSubscribers)
+		# NOTE:
+		# Encode::decode is needed to have correct encoding in saved gecos
 		# in setups using CentOS7, system Perl, sympa from epel, sopa11 dependencies installed with cpanm
 		# in setups using CentOS7, Perl (perl-5.26.3) installed with perlbrew, sympa build and installed from source, all dependencies installed with cpanm
 		$gecos = &Encode::decode('UTF8', $gecos);
-		# TODO:  compare createList
+		# NOTE: compare createList
 		# there only system perl must use Encode::decode
-
-
-		# TODO: from old version, stil valid??
-		# WARNING: without little patch to sympa mail.pm the welcome mail will be horrible broken
-		# if subject/info of list ist UTF8
-		# TODO check if only if kyrillic text
 
 		my $status = '';
 
