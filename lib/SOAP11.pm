@@ -639,6 +639,13 @@ sub subscribeSubscribers($$) {
 		my $email = $subscriber->{email} || '';
 		my $gecos = $subscriber->{gecos} || '';
 		$gecos = &Encode::decode('UTF8', $gecos);
+		# FIXME
+		# gecos encoding problem
+		# if list parameter 'subscribe' is
+		#   'owner' owner get's mail with wrong encoding, also wrong in sympa spool and DB entry once subscription is accepted
+		#   'auth' subscriber get's mail with wrong encoding, also wrong in sympa spool and DB entry once subscription is accepted
+		#   'open' user is subscribed and DB entry is correct
+
 
 		my $status = '';
 
@@ -685,9 +692,11 @@ sub subscribeSubscribers($$) {
 			}
 		}
 
-	}
+		unless (@{$spindle->{stash} || []}) {
+			$ok_sub++;
+		}
 
-	#TODO: keine Info in soap wenn Liste nicht subscribbar (wo mail an listadmin rausgeht aber)
+	}
 
 	my $fail_sub = $total_sub - $ok_sub;
 
