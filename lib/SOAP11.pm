@@ -617,16 +617,12 @@ sub subscribeSubscribers($$) {
 	# get parameters
 	my $listname = $in->{subscribeSubscribersRequest}{listname} || '';
 
-	# sender MUST not be an admin, 'nobody' is also not what we want
-    my $sender                  = undef; 
     my $robot                   = $ENV{'SYMPA_ROBOT'};
 
 	# return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
     unless ($list) {
-        $log->syslog('info',
-            'Add to list %s by %s refused, list unknown to robot %s',
-            $listname, $sender, $robot);
+        $log->syslog('info', 'List %s unknown to robot %s', $listname, $robot);
 		return Sympa::WWW::SOAP11::Error::error("No such list");
     }
 
@@ -638,19 +634,21 @@ sub subscribeSubscribers($$) {
 		$total_sub++;
 		my $email = $subscriber->{email} || '';
 		my $gecos = $subscriber->{gecos} || '';
-		$gecos = &Encode::decode('UTF8', $gecos);
-		# FIXME
-		# gecos encoding problem
+		#$gecos = &Encode::decode('UTF8', $gecos);
+
+		my $status = '';
+
+		# according to wwsympa.fcgi sender should be 'nobody'
+		my $sender = 'nobody';
+		# we had it set to $email
+		#my $sender = $email;
+		# but this led to gecos encoding problem
 		# if list parameter 'subscribe' is
 		#   'owner' owner get's mail with wrong encoding, also wrong in sympa spool and DB entry once subscription is accepted
 		#   'auth' subscriber get's mail with wrong encoding, also wrong in sympa spool and DB entry once subscription is accepted
 		#   'open' user is subscribed and DB entry is correct
-
-
-		my $status = '';
-
-		# set sender here to the email to be subscribed
-		$sender = $email;
+		# NOTE: also disabled $gecos = &Encode::decode('UTF8', $gecos); now
+		# NOTE: with nobody subscriber always has to confirm
 
 		my $spindle = Sympa::Spindle::ProcessRequest->new(
 			context          => $list,
