@@ -49,7 +49,7 @@ sub checkAuth($);
 
 sub getVersion($$);
 sub getLists($$);
-
+#TODO declare all sub's
 
 
 
@@ -84,17 +84,6 @@ sub checkAuth($) {
 		# return unauthenticated
 		return 0;
 	}
-#} elsif (Sympa::WWW::Report::is_there_any_reject_report_web()) {
-                ### for compatibility : it could be better
-                #my $intern = Sympa::WWW::Report::get_intern_error_web();
-                #my $system = Sympa::WWW::Report::get_system_error_web();
-                #my $user   = Sympa::WWW::Report::get_user_error_web();
-                #}
-                #if (ref($user) eq 'ARRAY') {
-                    #foreach my $err (@$user) {
-                     #   printf "ERROR : %s\n", $err;
-                    #}
-                #}					
 
 	$ENV{'USER_EMAIL'} = $email;
    	$log->syslog('debug', "login authentication OK");
@@ -429,8 +418,6 @@ sub createList($$) {
             'candidate_template'      => $list_tpl,
             'candidate_info'          => $description,
             'candidate_topics'        => $topics,
-            #'remote_host'             => $ENV{'REMOTE_HOST'},
-            #'remote_addr'             => $ENV{'REMOTE_ADDR'},
         }
     );
 
@@ -1556,61 +1543,6 @@ sub _closeList($$) {
 	$log->syslog('info', '%s list %s success', $mode, $listname);
 	return { status => 'OK' };
 }
-
-
-
-
-
-
-# not yet migrated/needed?
-################################################################################
-# getListDefinition
-# 	get attributes of a list
-#
-################################################################################
-sub getListDefinition($$) {
-	my ($server, $in) = @_;
-
-	# check auth
-	return Sympa::WWW::SOAP11::Error::unauthorized() 
-	if not checkAuth($in);
-
-	# get parameters
-	my $listname = $in->{getListDefinitionRequest}{listname} || '';
-	my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
-
-	# return error if unknown list
-    my $list = Sympa::List->new($listname, $robot);
-    unless ($list) {
-        $log->syslog('info', 'No such list %s@%s', $listname, $robot);
-		return Sympa::WWW::SOAP11::Error::error("No such list");
-    }
-	
-	# return forbidden if not authorized 
-	# TODO: wer darf das wirklich sehen? listmaster, owner?
-	unless ($list->is_admin('privileged_owner', $sender)
-            || Sympa::is_listmaster($list, $sender)) {
-		$log->syslog('info', 'Inspecting parameters of list %s@%s not allowed for %s', $listname, $robot, $sender);
-		return Sympa::WWW::SOAP11::Error::forbidden()
-	}
-
-	# Save DEBUG
-	open FILE, ">", "/var/tmp/debug.list.txt";
-	print FILE Dumper $list;
-	close FILE;	
-
-	#FIXME: noch lange nicht fertig, viel geändert 
-	#TODO: was brauchen wir wirklich?
-	#TODO: vergl. getList 
-
-	$log->syslog('debug', Dumper $list);
-	
-	# return
-	return { lists => $list };
-}
-
-
 
 
 1;
