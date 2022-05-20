@@ -133,7 +133,7 @@ dispatcher CALLBACK => 'default', mode => $Conf::Conf{'log_level'}, callback => 
 
 # Logging to STDERR
 use Log::Report::Dispatcher::File;
-dispatcher 'FILE' => 'stderr', to => \*STDERR, mode => 3;
+dispatcher 'FILE' => 'stderr', to => \*STDERR, mode => $Conf::Conf{'log_level'};
 
 
 # set up the daemon
