@@ -38,8 +38,8 @@ use Sympa::WWW::Tools;
 use XML::Compile::WSDL11;
 use XML::Compile::SOAP11;
 use XML::Compile::SOAP::WSS;
-use XML::Compile::WSS::Util	qw/:utp11/;
-use XML::Compile::Util		qw/pack_type/;
+use XML::Compile::WSS::Util    qw/:utp11/;
+use XML::Compile::Util         qw/pack_type/;
 use XML::Compile::SOAP::Daemon::CGI;
 use CGI::Fast;
 
@@ -88,7 +88,7 @@ my $all_lists = Sympa::List::get_lists('*');
 #    Soap part
 ##############################################################################
 
-# XML::Compile::* uses Log::Report.	The 'default' dispatcher for error
+# XML::Compile::* uses Log::Report. The 'default' dispatcher for error
 # messages is here changed from PERL (die/warn) into using Sympas log->syslog.
 # We can't use SYSLOG dispatcher as Sys::Syslog only allows one syslog stream
 use Log::Report 'sympasoap11', syntax => 'SHORT';
@@ -97,37 +97,37 @@ use Log::Report 'sympasoap11', syntax => 'SHORT';
 
 # mapping of Dispatcher::Syslog reasons to Sympa Log level
 my %reasonToLevel = (
-	TRACE   => 'debug3',
-	ASSERT  => 'debug2',
-	INFO    => 'info',
-	NOTICE  => 'notice',
-	WARNING => 'err',
-	MISTAKE => 'err',
-	ERROR   => 'err',
-	FAULT   => 'err',
-	ALERT   => 'err',
-	FAILURE => 'err',
-	PANIC   => 'err'
+    TRACE   => 'debug3',
+    ASSERT  => 'debug2',
+    INFO    => 'info',
+    NOTICE  => 'notice',
+    WARNING => 'err',
+    MISTAKE => 'err',
+    ERROR   => 'err',
+    FAULT   => 'err',
+    ALERT   => 'err',
+    FAILURE => 'err',
+    PANIC   => 'err'
 );
 
 # callback routine for dispatcher
 sub logger {
-	my ($disp, $options, $reason, $message) = @_;
-	##$log->syslog('info', "disp $disp");
-	##$log->syslog('info', "options $options");
-	#$log->syslog('info', "reason $reason");
-	##$log->syslog('info', "message $message");
-	my $level = $reasonToLevel{$reason};
-	#$log->syslog('info', "level $level");
-	my $newMessage = $options->{location}[0] . ' ' . $message->toString;
-	##$log->syslog('info', "newMessage $newMessage");
-	if ( defined $level ) {
-		$log->syslog($level, $newMessage);
-	} else {
-		$log->syslog('err', "Not supported reason $reason, using INFO");
-		$log->syslog('info', $newMessage);
-	}
-	##$log->syslog('info', "OK");
+    my ($disp, $options, $reason, $message) = @_;
+    ##$log->syslog('info', "disp $disp");
+    ##$log->syslog('info', "options $options");
+    #$log->syslog('info', "reason $reason");
+    ##$log->syslog('info', "message $message");
+    my $level = $reasonToLevel{$reason};
+    #$log->syslog('info', "level $level");
+    my $newMessage = $options->{location}[0] . ' ' . $message->toString;
+    ##$log->syslog('info', "newMessage $newMessage");
+    if ( defined $level ) {
+        $log->syslog($level, $newMessage);
+    } else {
+        $log->syslog('err', "Not supported reason $reason, using INFO");
+        $log->syslog('info', $newMessage);
+    }
+    ##$log->syslog('info', "OK");
 }
 dispatcher CALLBACK => 'default', mode => $Conf::Conf{'log_level'}, callback => \&logger;
 
@@ -166,42 +166,42 @@ $daemon->setWsdlResponse(Sympa::Constants::MODULEDIR . "/Sympa/WWW/SOAP11/sympas
 # The only thing to do, is provide call-back code references
 # for each of the portNames in the WSDL.
 my %callbacks = ( 
-	getVersion			 => \&Sympa::WWW::SOAP11::getVersion,
-	getRobots			 => \&Sympa::WWW::SOAP11::getRobots,
-	getListTemplates     => \&Sympa::WWW::SOAP11::getListTemplates,  
-	getLists			 => \&Sympa::WWW::SOAP11::getLists,
-	getList			 	 => \&Sympa::WWW::SOAP11::getList,
-	createList			 => \&Sympa::WWW::SOAP11::createList,
-	getSubscribers	     => \&Sympa::WWW::SOAP11::getSubscribers,
-	addSubscribers	     => \&Sympa::WWW::SOAP11::addSubscribers,
-	subscribeSubscribers	 => \&Sympa::WWW::SOAP11::subscribeSubscribers,
-	delSubscribers        => \&Sympa::WWW::SOAP11::delSubscribers,
-	unsubscribeSubscribers	 => \&Sympa::WWW::SOAP11::unsubscribeSubscribers,
-	getSubscriptions     => \&Sympa::WWW::SOAP11::getSubscriptions,
-	getAdmins            => \&Sympa::WWW::SOAP11::getAdmins,
-	addAdmins	         => \&Sympa::WWW::SOAP11::addAdmins,
-	delAdmins    	     => \&Sympa::WWW::SOAP11::delAdmins,
-	changeEmail          => \&Sympa::WWW::SOAP11::changeEmail,
-	closeList			 => \&Sympa::WWW::SOAP11::closeList,
-	deleteList			 => \&Sympa::WWW::SOAP11::deleteList,
+    getVersion               => \&Sympa::WWW::SOAP11::getVersion,
+    getRobots                => \&Sympa::WWW::SOAP11::getRobots,
+    getListTemplates         => \&Sympa::WWW::SOAP11::getListTemplates,  
+    getLists                 => \&Sympa::WWW::SOAP11::getLists,
+    getList                  => \&Sympa::WWW::SOAP11::getList,
+    createList               => \&Sympa::WWW::SOAP11::createList,
+    getSubscribers           => \&Sympa::WWW::SOAP11::getSubscribers,
+    addSubscribers           => \&Sympa::WWW::SOAP11::addSubscribers,
+    subscribeSubscribers     => \&Sympa::WWW::SOAP11::subscribeSubscribers,
+    delSubscribers           => \&Sympa::WWW::SOAP11::delSubscribers,
+    unsubscribeSubscribers   => \&Sympa::WWW::SOAP11::unsubscribeSubscribers,
+    getSubscriptions         => \&Sympa::WWW::SOAP11::getSubscriptions,
+    getAdmins                => \&Sympa::WWW::SOAP11::getAdmins,
+    addAdmins                => \&Sympa::WWW::SOAP11::addAdmins,
+    delAdmins                => \&Sympa::WWW::SOAP11::delAdmins,
+    changeEmail              => \&Sympa::WWW::SOAP11::changeEmail,
+    closeList                => \&Sympa::WWW::SOAP11::closeList,
+    deleteList               => \&Sympa::WWW::SOAP11::deleteList,
 
 
-#	getListDefinition	 => \&Sympa::WWW::SOAP11::getListDefinition
+#    getListDefinition     => \&Sympa::WWW::SOAP11::getListDefinition
 
-#	, setListDefinition			 => \&Sympa::WWW::SOAP11::List::setListDefinition
-#	, copyList			 => \&Sympa::WWW::SOAP11::List::copyList
-#	, getFooter			 => \&Sympa::WWW::SOAP11::List::getFooter
-#	, getHeader			 => \&Sympa::WWW::SOAP11::List::getHeader
-#	, getInfo			 => \&Sympa::WWW::SOAP11::List::getInfo
-#	, setFooter			 => \&Sympa::WWW::SOAP11::List::setFooter
-#	, setHeader			 => \&Sympa::WWW::SOAP11::List::setHeader
-#	, setInfo			 => \&Sympa::WWW::SOAP11::List::setInfo
-#	, getTopics			 => \&Sympa::WWW::SOAP11::List::getTopics
+#    , setListDefinition   => \&Sympa::WWW::SOAP11::List::setListDefinition
+#    , copyList            => \&Sympa::WWW::SOAP11::List::copyList
+#    , getFooter           => \&Sympa::WWW::SOAP11::List::getFooter
+#    , getHeader           => \&Sympa::WWW::SOAP11::List::getHeader
+#    , getInfo             => \&Sympa::WWW::SOAP11::List::getInfo
+#    , setFooter           => \&Sympa::WWW::SOAP11::List::setFooter
+#    , setHeader           => \&Sympa::WWW::SOAP11::List::setHeader
+#    , setInfo             => \&Sympa::WWW::SOAP11::List::setInfo
+#    , getTopics           => \&Sympa::WWW::SOAP11::List::getTopics
 );
 
 $daemon->operationsFromWSDL (
-	$wsdl, 
-	callbacks => \%callbacks
+    $wsdl, 
+    callbacks => \%callbacks
 );
 
 # loop forever and handle requests
@@ -211,5 +211,5 @@ while ( my $query = new CGI::Fast ) {
     $ENV{'SYMPA_ROBOT'} = Sympa::WWW::Tools::get_robot('soap_url_local', 'soap_url');
     $log->syslog('debug3', 'sympasoap11 for SYMPA_ROBOT: %s', $ENV{'SYMPA_ROBOT'});
 
-	$daemon->runCgiRequest( query => $query, nph => 0 );
+    $daemon->runCgiRequest( query => $query, nph => 0 );
 }
