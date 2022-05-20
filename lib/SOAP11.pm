@@ -563,6 +563,9 @@ sub getSubscribers($$) {
 
                 # Lower case email address
                 $user->{'email'} =~ y/A-Z/a-z/;
+				# remove additional (manually created) DB field from response
+				# it is not part of wsdl
+				delete $user->{'optin_date_subscriber'};
 				push @result, $user;
 			}
         } while ($user = $list->get_next_list_member());
@@ -1037,6 +1040,9 @@ sub getSubscriptions($$) {
         if ($result_item->{'subscribed'}) {
             if (my $subscriber = $list->get_list_member($email)) {
 				$list->parse_list_member_bounce($subscriber);
+				# remove additional (manually created) DB field from response
+				# it is not part of wsdl
+				delete $subscriber->{'optin_date_subscriber'};
                 $result_item->{'subscriber'} = $subscriber;
 				$log->syslog('debug2', 'subscriber: %s', Dumper \$subscriber);
             }
