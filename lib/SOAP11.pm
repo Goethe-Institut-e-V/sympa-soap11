@@ -1541,7 +1541,6 @@ sub _closeList($$) {
 		} elsif ($report->[1] eq 'user') {
 			$log->syslog('err', 'Failed to %s list %s. Undef. %s', $mode, $listname, $reason_string);
 			return Sympa::WWW::SOAP11::Error::error("Failed to $mode list $listname. $reason_string");
-			next;
 		}
 	}
 
