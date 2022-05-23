@@ -34,58 +34,58 @@ use constant ERROR_NS   => 'http://listen.goethe.de/schemas/sympa/error';
 
 #
 # unauthorized
-# 	return Sympa related unauthorized as soap fault
+#     return Sympa related unauthorized as soap fault
 #
 sub unauthorized() {
     +{ Fault =>
         { faultcode   => pack_type(ERROR_NS, 'Client.SympaAuthentication')
         , faultstring => "Authentication failed"
         }
-     , _RETURN_CODE => 500	# HTTP_INTERNAL_SERVER_ERROR
+     , _RETURN_CODE => 500    # HTTP_INTERNAL_SERVER_ERROR
      , _RETURN_TEXT => 'Internal Server Error'
      };
 }
 
 #
 # forbidden
-# 	return Sympa related forbidden as soap fault
+#     return Sympa related forbidden as soap fault
 #
 sub forbidden() {
     +{ Fault =>
         { faultcode   => pack_type(Sympa::WWW::SOAP11::Error::ERROR_NS, 'Client.SympaAuthorization')
         , faultstring => "Not authorized"
         }
-     , _RETURN_CODE => 500	# HTTP_INTERNAL_SERVER_ERROR
+     , _RETURN_CODE => 500    # HTTP_INTERNAL_SERVER_ERROR
      , _RETURN_TEXT => 'Internal Server Error'
      };
 }
 
 #
 # error
-# 	return Sympa related error as soap fault
+#     return Sympa related error as soap fault
 #
 sub error($) {
-	my $msg = shift;
+    my $msg = shift;
     +{ Fault =>
         { faultcode   => pack_type(Sympa::WWW::SOAP11::Error::ERROR_NS, 'Client.SympaProcessing')
         , faultstring => $msg
         }
-     , _RETURN_CODE => 500	# HTTP_INTERNAL_SERVER_ERROR
+     , _RETURN_CODE => 500    # HTTP_INTERNAL_SERVER_ERROR
      , _RETURN_TEXT => 'Internal Server Error'
      };
 }
 
 #
 # failure
-# 	return Sympa related fault as soap fault
+#     return Sympa related fault as soap fault
 #
 sub failure($) {
-	my $msg = shift;
+    my $msg = shift;
     +{ Fault =>
         { faultcode   => pack_type(Sympa::WWW::SOAP11::Error::ERROR_NS, 'Server.SympaProcessing')
         , faultstring => $msg
         }
-     , _RETURN_CODE => 500	# HTTP_INTERNAL_SERVER_ERROR
+     , _RETURN_CODE => 500    # HTTP_INTERNAL_SERVER_ERROR
      , _RETURN_TEXT => 'Internal Server Error'
      };
 }
