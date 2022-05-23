@@ -855,16 +855,16 @@ sub unsubscribeSubscribers($$) {
 			my $reason_string = get_reason_string($report, $robot);
 			if ($report->[1] eq 'auth') {
 				push @result, { email => $email, status => 'Not allowed. ' . $reason_string };
-				next;
+				last;
 			} elsif ($report->[1] eq 'intern') {
 				push @result, { email => $email, status => 'Internal error' };
-				next;
+				last;
 			} elsif ($report->[1] eq 'notice') {
 				push @result, { email => $email, status => 'OK. ' . $reason_string };
-				next;
+				last;
 			} elsif ($report->[1] eq 'user') {
 				push @result, { email => $email, status => 'Undef. ' . $reason_string };
-				next;
+				last;
 			}
 		}
 
