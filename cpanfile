@@ -8,4 +8,8 @@ requires 'XML::Compile::WSDL11', '>= 0';
 requires 'XML::Compile::SOAP::Daemon::CGI', '>= 0';
 requires 'XML::Compile::WSS::Util', '>= 0';
 
+requires 'CGI::Fast', '>= 0';
+requires 'Digest::SHA', '>= 0';
+requires 'Data::Dumper', '>= 0';
+
 #};

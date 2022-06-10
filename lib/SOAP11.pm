@@ -34,15 +34,19 @@ use Sympa::WWW::Auth;
 use constant VERSION => '0.6.0';
 my $VERSION = Sympa::WWW::SOAP11::VERSION; # Module::Build reads this line
 use Sympa::WWW::SOAP11::Error;
+use Digest::SHA qw(sha256);
 
 # debugging
 use Data::Dumper;
 $Data::Dumper::Indent = 1;
+#use Time::HiRes qw(time);
 
 
 # get logger instance
 my $log = Sympa::Log->instance;
 
+# auth caching
+our $auth_cache;
 
 # Forward declarations allow prototype checking
 sub checkAuth($);
@@ -64,6 +68,7 @@ sub checkAuth($) {
 
     # user/credentials from wsse
     my $email = $in->{wsse_Security}{wsse_UsernameToken}{wsse_Username}{_} || undef;
+    $ENV{'USER_EMAIL'} = $email;
     # return unauthenticated if wsse not defined
     unless (defined $email) {
         $log->syslog('notice', "login authentication failed, no user in wsse" );
@@ -78,14 +83,47 @@ sub checkAuth($) {
         return 0;
     }
 
+    # trusted_application: see Sympa::WWW:Auth sub remote_app_check_password
+    # we use trusted_applications.conf in robot or sympa
+    # to declare IP and cachetime for soap clients
+    # trusted_application
+    #    name 10.10.10.10
+    #    md5password 3600
+    my $trusted_apps = Conf::get_robot_conf($ENV{'SYMPA_ROBOT'}, 'trusted_applications');
+    foreach my $application (@{$trusted_apps}) {
+        if ( $application->{'name'} eq $ENV{'REMOTE_ADDR'} ) {
+            $log->syslog('debug2', 'client %s is trusted', $ENV{'REMOTE_ADDR'} );
+            unless (defined $application->{'md5password'}) {
+                $log->syslog('notice', 'client %s is trusted but no cachetime defined', $ENV{'REMOTE_ADDR'} );
+                last;
+            }
+            my $digest = sha256($ENV{'REMOTE_ADDR'} . $email . $password);
+            # authenticated client is in cache timeframe
+            if ( defined $auth_cache->{$digest}{time} && (time - $auth_cache->{$digest}{time} < $application->{'md5password'}) ) {
+                $log->syslog('debug', "%s login from %s with cached authentication", $email, $ENV{'REMOTE_ADDR'});
+                # return authenticated
+                return 1;
+            }
+            my $user = Sympa::WWW::Auth::check_auth( $ENV{'SYMPA_ROBOT'}, $email, $password );
+            unless ($user) {
+                $log->syslog('notice', "login authentication failed for %s from %s", $email, $ENV{'REMOTE_ADDR'});
+                # return unauthenticated
+                return 0;
+            }
+            $auth_cache->{$digest}{time} = time;
+            $log->syslog('notice', "login authentication OK for %s from %s. Enabling cache for %s seconds.", $email, $ENV{'REMOTE_ADDR'}, $application->{'md5password'});
+            # return authenticated
+            return 1;
+        }
+    }
+
     my $user = Sympa::WWW::Auth::check_auth( $ENV{'SYMPA_ROBOT'}, $email, $password );
     unless ($user) {
-        $log->syslog('notice', "login authentication failed for %s", $email);
+        $log->syslog('notice', "login authentication failed for %s from %s", $email, $ENV{'REMOTE_ADDR'});
         # return unauthenticated
         return 0;
     }
 
-    $ENV{'USER_EMAIL'} = $email;
     $log->syslog('debug', "login authentication OK");
     #$log->syslog('debug', Dumper \%ENV);
     
@@ -102,7 +140,7 @@ sub checkAuth($) {
 #
 sub getVersion($$) {
     my ($server, $in) = @_;
-    
+
     # check auth
     return Sympa::WWW::SOAP11::Error::unauthorized() 
     if not checkAuth($in);
