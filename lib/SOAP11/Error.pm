@@ -1,7 +1,7 @@
 # SOAP 1.1 / WSSE compliant interface for
 # Sympa - SYsteme de Multi-Postage Automatique
 #
-# Copyright 2013-2021 Goethe-Institut e.V.
+# Copyright 2013-2022 Goethe-Institut e.V.
 # Immo Goltz <immo.goltz@goethe.de>
 #
 # This program is free software; you can redistribute it and/or modify

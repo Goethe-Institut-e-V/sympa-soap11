@@ -3,7 +3,7 @@
 # SOAP 1.1 / WSSE compliant interface for
 # Sympa - SYsteme de Multi-Postage Automatique
 #
-# Copyright 2013-2020 Goethe-Institut e.V.
+# Copyright 2013-2022 Goethe-Institut e.V.
 # Immo Goltz <immo.goltz@goethe.de>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -92,8 +92,6 @@ my $all_lists = Sympa::List::get_lists('*');
 # messages is here changed from PERL (die/warn) into using Sympas log->syslog.
 # We can't use SYSLOG dispatcher as Sys::Syslog only allows one syslog stream
 use Log::Report 'sympasoap11', syntax => 'SHORT';
-#use Log::Report 'sympasoap11', syntax => 'SHORT', mode => 'VERBOSE';
-#use Log::Report 'sympasoap11', mode => 'DEBUG';
 
 # mapping of Dispatcher::Syslog reasons to Sympa Log level
 my %reasonToLevel = (
@@ -113,21 +111,14 @@ my %reasonToLevel = (
 # callback routine for dispatcher
 sub logger {
     my ($disp, $options, $reason, $message) = @_;
-    ##$log->syslog('info', "disp $disp");
-    ##$log->syslog('info', "options $options");
-    #$log->syslog('info', "reason $reason");
-    ##$log->syslog('info', "message $message");
     my $level = $reasonToLevel{$reason};
-    #$log->syslog('info', "level $level");
     my $newMessage = $options->{location}[0] . ' ' . $message->toString;
-    ##$log->syslog('info', "newMessage $newMessage");
     if ( defined $level ) {
         $log->syslog($level, $newMessage);
     } else {
         $log->syslog('err', "Not supported reason $reason, using INFO");
         $log->syslog('info', $newMessage);
     }
-    ##$log->syslog('info', "OK");
 }
 dispatcher CALLBACK => 'default', mode => $Conf::Conf{'log_level'}, callback => \&logger;
 
@@ -184,19 +175,6 @@ my %callbacks = (
     changeEmail              => \&Sympa::WWW::SOAP11::changeEmail,
     closeList                => \&Sympa::WWW::SOAP11::closeList,
     deleteList               => \&Sympa::WWW::SOAP11::deleteList,
-
-
-#    getListDefinition     => \&Sympa::WWW::SOAP11::getListDefinition
-
-#    , setListDefinition   => \&Sympa::WWW::SOAP11::List::setListDefinition
-#    , copyList            => \&Sympa::WWW::SOAP11::List::copyList
-#    , getFooter           => \&Sympa::WWW::SOAP11::List::getFooter
-#    , getHeader           => \&Sympa::WWW::SOAP11::List::getHeader
-#    , getInfo             => \&Sympa::WWW::SOAP11::List::getInfo
-#    , setFooter           => \&Sympa::WWW::SOAP11::List::setFooter
-#    , setHeader           => \&Sympa::WWW::SOAP11::List::setHeader
-#    , setInfo             => \&Sympa::WWW::SOAP11::List::setInfo
-#    , getTopics           => \&Sympa::WWW::SOAP11::List::getTopics
 );
 
 $daemon->operationsFromWSDL (

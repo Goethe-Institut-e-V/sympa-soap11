@@ -35,12 +35,3 @@ Please consult src/patches/README.md for probably needed patches to some perl mo
 	./Build install
 	/usr/bin/spawn-fcgi -n -F 1 -P /run/sympa/sympasoap11.pid -s /run/sympa/sympasoap11.socket -u sympa -g sympa -M 0600 -U apache -- /usr/libexec/sympa/sympasoap11.fcgi
 ```
-
-## Support and documentation
-
-After installing you can find documentation for this module with the
-perldoc command.
-
-    perldoc SympaSOAP::Server
-
-You can also look for information at GitHub https://github.com/igoltz/SympaSOAP

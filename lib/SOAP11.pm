@@ -1,7 +1,7 @@
 # SOAP 1.1 / WSSE compliant interface for
 # Sympa - SYsteme de Multi-Postage Automatique
 #
-# Copyright 2013-2021 Goethe-Institut e.V.
+# Copyright 2013-2022 Goethe-Institut e.V.
 # Immo Goltz <immo.goltz@goethe.de>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -125,7 +125,6 @@ sub checkAuth($) {
     }
 
     $log->syslog('debug', "login authentication OK");
-    #$log->syslog('debug', Dumper \%ENV);
     
     # return authenticated
     return 1;
@@ -230,7 +229,6 @@ sub getListTemplates($$) {
         push @result,  {
             'name'    => $template,
             'title'   => $tpl->{$template}->{'title'},
-            #'comment' => $tpl->{$template}->{'html_content'},
             'comment' => $parse_result,
         };
     }
@@ -581,7 +579,7 @@ sub getSubscribers($$) {
     if ($action =~ /reject/i) {
         my $reason_string = get_reason_string([ {action => 'review'}, 'auth', $result->{'reason'} ], $robot);
         $log->syslog('info', 'Review %s from %s refused (not allowed)', $listname, $sender);
-        # TODO: reason_string mit ausgeben?
+        # TODO: report also reason_string?
         return  Sympa::WWW::SOAP11::Error::forbidden();
     }
     
@@ -924,7 +922,7 @@ sub unsubscribeSubscribers($$) {
 #
 # delSubscribers
 #    "del" in sympasoap
-#    removees a subscriber from a list (without double opt out!)
+#    removes a subscriber from a list (without double opt out!)
 #
 sub delSubscribers($$) {
     my ($server, $in) = @_;
@@ -969,9 +967,6 @@ sub delSubscribers($$) {
             scenario_context => {
                 sender                  => $sender,
                 email                   => $email,
-                #remote_host             => $ENV{'REMOTE_HOST'},
-                #remote_addr             => $ENV{'REMOTE_ADDR'},
-                #remote_application_name => $ENV{'remote_application_name'}
             }
         );
         unless ($spindle and $spindle->spin) {
@@ -1048,7 +1043,6 @@ sub getSubscriptions($$) {
         my $result = Sympa::Scenario->new($list, 'visibility')->authz(
             'md5',
             {   'sender'                  => $sender,
-                #'remote_application_name' => $ENV{'remote_application_name'}
             }
         );
         my $action;
@@ -1078,6 +1072,7 @@ sub getSubscriptions($$) {
         if ($result_item->{'subscribed'}) {
             if (my $subscriber = $list->get_list_member($email)) {
                 $list->parse_list_member_bounce($subscriber);
+                # FIXME : get all additional fields from config and remove them
                 # remove additional (manually created) DB field from response
                 # it is not part of wsdl
                 delete $subscriber->{'optin_date_subscriber'};
@@ -1123,7 +1118,7 @@ sub getAdmins($$) {
     }
 
     # return forbidden if not authorized 
-    # FIXME: nur role owner allowed? check may_edit; now editors also are able to list
+    # FIXME: only role owner allowed? check may_edit; now editors also are able to list
     unless ( $list->is_admin($authrole, $sender) || Sympa::is_listmaster($list, $sender) ) {
         $log->syslog('info', 'Review %s of list %s@%s not allowed for %s', $role, $listname, $robot, $sender);
         return Sympa::WWW::SOAP11::Error::forbidden()
@@ -1182,7 +1177,7 @@ sub addAdmins($$) {
         return Sympa::WWW::SOAP11::Error::error("No such list");
     }
 
-    #FIXME: may_edit? nur privileged_owner zB dürfen
+    #FIXME: may_edit? only e.g. privileged_owner are allowed
     # return forbidden if not authorized 
     unless ($list->is_admin($role, $sender) || Sympa::is_listmaster($list, $sender)) {
         $log->syslog('info', 'Adding %s to list %s@%s not allowed for %s', $role, $listname, $robot, $sender);
@@ -1200,7 +1195,7 @@ sub addAdmins($$) {
         $total_add++;
         my $email = $admin->{email} || '';
         #my $gecos = $admin->{gecos} || '';
-        # seit 2.4.48 ?? oder plötzlich? 
+        # NOTE: since 2.4.48 ? or what changed? Now decode needed
         $admin->{gecos} = &Encode::decode('UTF8', $admin->{gecos});
         $admin->{info} = &Encode::decode('UTF8', $admin->{info});
         $admin->{profile} ||= 'normal';
@@ -1223,7 +1218,7 @@ sub addAdmins($$) {
             $ok_add++;
             $log->syslog('info', 'added %s as %s of the list %s@%s', $email, $role, $listname, $robot);
             # Notify the new list owner/editor
-            #FIXME: auch wenn das fehlschlägt tief in sympa gibt es ok zurück, geht es mit eval?
+            #FIXME: this returns OK even if somethings fails deep down in the process. Could eval be used?
             unless ( Sympa::send_notify_to_user(
                 $list,
                 'added_as_listadmin',
@@ -1303,7 +1298,7 @@ sub delAdmins($$) {
     #    $log->syslog('info', 'Removing owners from list %s@%s not allowed for %s', $listname, $robot, $sender);
     #    return Sympa::WWW::SOAP11::Error::forbidden()
     #}
-#FIXME: is_admin oder may_edit?
+    #FIXME: is_admin or may_edit?
     # return forbidden if not authorized 
     unless ( $list->may_edit($role, $sender) eq 'write' ) {
         $log->syslog('info', 'Remove %s from list %s@%s not allowed for %s', $role, $listname, $robot, $sender);
@@ -1322,8 +1317,8 @@ sub delAdmins($$) {
 
         # List.pm has no _add_list_admin equivalent for del, so we need to refresh list object after each delete
         # invalidate cache and reload list
-#6.2.48        $list->_cache_publish_expiry('admin_user');
-#6.2.48        $list = Sympa::List->new($listname, $robot);
+        #6.2.48        $list->_cache_publish_expiry('admin_user');
+        #6.2.48        $list = Sympa::List->new($listname, $robot);
         my $status = $list->load($listname, $robot);
         $log->syslog('debug2', Dumper $status);
 
@@ -1336,11 +1331,11 @@ sub delAdmins($$) {
         }
     
         $log->syslog('debug2', Dumper \@{$list->get_admins($role)});
-        $log->syslog('debug2', '### ANZAHL sc %s',  scalar(@{$list->get_admins($role)}));
-        $log->syslog('debug2', '### ANZAHL  %s',  $#{$list->get_admins($role)});
+        $log->syslog('debug2', '### COUNT scalar %s',  scalar(@{$list->get_admins($role)}));
+        $log->syslog('debug2', '### COUNT  %s',  $#{$list->get_admins($role)});
         # return error if last owner
-        #FIXME: der letzte wird trotzdem gelöscht
-        #FIXME: nur für owner
+        #FIXME: last one however is removed
+        #FIXME: only applies for owner
         unless ( scalar(@{$list->get_admins($role)}) > 1 ) {
             $log->syslog('info', '%s last %s of the list %s@%s', $email, $role, $listname, $robot);
             #return Sympa::WWW::SOAP11::Error::error("Is last $role of the list");
@@ -1348,7 +1343,7 @@ sub delAdmins($$) {
             next;
         }
     
-        #TODO: und last privileges User? der kann entfernt werden ohne neuen anzulegen
+        #TODO: what about last privileged user? May be deleted without creating new one.
 
         # delete user
         unless ( $list->delete_list_admin($role, $email) ) {
@@ -1365,16 +1360,15 @@ sub delAdmins($$) {
 
     # invalidate cache and reload list
     #$list->_cache_publish_expiry('admin_user');
-#6.2.48    $list = Sympa::List->new($listname, $robot);
-
-    #FIXME: all die add/delete funktionieren nicht richtig. caching? nach restart der Anwendung sieht es ok aus.
+    #6.2.48    $list = Sympa::List->new($listname, $robot);
+    #FIXME: all add/delete seems not to work correct, caching? Only after restartit looks ok.
     # Don't let a list without a privileged admin
     unless ( scalar(@{$list->get_admins('privileged_owner')}) ) {
         for my $admin ($list->get_admins('owner')) {
             my $email = $admin->{email};
             # invalidate cache and reload list
             #$list->_cache_publish_expiry('admin_user');
-#6.2.48            $list = Sympa::List->new($listname, $robot);
+            #6.2.48            $list = Sympa::List->new($listname, $robot);
             unless ( $list->update_list_admin($email, 'owner', {profile => 'privileged'}) ) {
                 $log->syslog('err', 'Failed to promote %s as new privileged owner in list %s@%s', $email, $listname, $robot);
                 $status{$email} .= ". Failed to promote " . $email . " as new privileged owner.";
@@ -1384,19 +1378,17 @@ sub delAdmins($$) {
             $log->syslog('debug2', 'Promoted %s as new privileged owner.', $email);
         }
     }
-#FIXME:
-#FIXME: addAdmin -> getAdmins funktioniert
-#FIXME: delAdmin -> getAdmins (*x)/ addAdmins (*1) zeigt alte Werte
-#FIXME: delAdmins -> x* delAdmins oder 1* addAdmins -> getAdmins korrekt
-#FIXME:
-#FIXME: oh, mit 6.2.48 geht es plötzlich
+    #FIXME: addAdmin -> getAdmins works
+    #FIXME: delAdmin -> getAdmins (*x)/ addAdmins (*1) shows old values
+    #FIXME: delAdmins -> x* delAdmins or 1* addAdmins -> getAdmins correct
+    #FIXME: since 6.2.48 it works as expected
 
     # invalidate cache and reload list
-#    $list->_cache_publish_expiry('admin_user');
-#    $list->_cache_read_expiry('admin_user');
-#    $list = Sympa::List->new($listname, $robot);
- #   $list->_cache_publish_expiry('admin_user');
-#    $list = Sympa::List->new($listname, $robot);
+    #   $list->_cache_publish_expiry('admin_user');
+    #   $list->_cache_read_expiry('admin_user');
+    #   $list = Sympa::List->new($listname, $robot);
+    #   $list->_cache_publish_expiry('admin_user');
+    #   $list = Sympa::List->new($listname, $robot);
 
     # get fresh admin objects 
     foreach my $email ( @{$in->{delAdminsRequest}{email}} ) {
@@ -1469,15 +1461,15 @@ sub changeEmail($$) {
     $log->syslog('debug2', 'SPINDLE: %s', Dumper $spindle);
 
     foreach my $report (@{$spindle->{stash} || []}) {
-        $log->syslog('debug2', 'STASH definiert %s', Dumper $report);
-        #FIXME:  welche Meldungen/Ergebnissse kommen denn hier?
+        $log->syslog('debug2', 'STASH defined %s', Dumper $report);
+        #FIXME: which messages are returned here?
         if ($report->[1] eq 'notice') {
             $log->syslog('debug2', 'Stash notice');
             #Sympa::WWW::Report::notice_report_web(@{$report}[2, 3],$param->{'action'});
             return Sympa::WWW::SOAP11::Error::error("Failed to change email address. " . @{$report}[1] . ": " . @{$report}[2]);
         } else {
             #Sympa::WWW::Report::reject_report_web(@{$report}[1 .. 3],$param->{action});
-            $log->syslog('debug2', 'Stash anderes');
+            $log->syslog('debug2', 'Stash other');
             return Sympa::WWW::SOAP11::Error::error("Failed to change email address. " . @{$report}[1] . ": " . @{$report}[2]);
         }
 
