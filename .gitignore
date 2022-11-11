@@ -52,3 +52,9 @@ XTR
 
 *.SIK*
 
+*.neu
+*.sik
+*.pdf
+
+sympasoap11-soapui-project.xml*
+soapui-settings.xml*
