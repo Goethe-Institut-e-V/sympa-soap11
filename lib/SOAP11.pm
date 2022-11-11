@@ -599,9 +599,14 @@ sub getSubscribers($$) {
 
                 # Lower case email address
                 $user->{'email'} =~ y/A-Z/a-z/;
-                # remove additional (manually created) DB field from response
-                # it is not part of wsdl
-                delete $user->{'optin_date_subscriber'};
+                # remove additional (manually created) DB fields from response
+                # because they are not part of the wsdl!
+                if ($Conf::Conf{'db_additional_subscriber_fields'}) {
+                    foreach my $f (split /\s*,\s*/,
+                        $Conf::Conf{'db_additional_subscriber_fields'}) {
+                        delete $user->{$f};
+                    }
+                }                
                 push @result, $user;
             }
         } while ($user = $list->get_next_list_member());
@@ -1068,14 +1073,18 @@ sub getSubscriptions($$) {
             $result_item->{'subscribed'} = 1;
         }
 
-        # determine bounce information of this user for this list
         if ($result_item->{'subscribed'}) {
             if (my $subscriber = $list->get_list_member($email)) {
+                # insert bounce information of this user for this list
                 $list->parse_list_member_bounce($subscriber);
-                # FIXME : get all additional fields from config and remove them
-                # remove additional (manually created) DB field from response
-                # it is not part of wsdl
-                delete $subscriber->{'optin_date_subscriber'};
+                # remove additional (manually created) DB fields from response
+                # because they are not part of the wsdl!
+                if ($Conf::Conf{'db_additional_subscriber_fields'}) {
+                    foreach my $f (split /\s*,\s*/,
+                        $Conf::Conf{'db_additional_subscriber_fields'}) {
+                        delete $subscriber->{$f};
+                    }
+                }                
                 $result_item->{'subscriber'} = $subscriber;
                 $log->syslog('debug2', 'subscriber: %s', Dumper \$subscriber);
             }
