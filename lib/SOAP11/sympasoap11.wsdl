@@ -739,6 +739,10 @@
 				Requests versions of the Sympa service components.
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="getVersionResponse">
@@ -771,6 +775,10 @@
 				Requests all robots (Domains) of this Sympa instance.
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="getRobotsResponse">
@@ -794,6 +802,10 @@
 				Requests all list templates from the Sympa robot.
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="getListTemplatesResponse">
@@ -1974,7 +1986,7 @@
   </wsdl:binding>
   <wsdl:service name="SympaService">
     <wsdl:port binding="tns:SympaSoap11" name="SympaSoap11">
-      <soap:address location="/sympasoap11/"/>
+      <soap:address location="https://please-configure-in-your-client.example.com/sympasoap11/"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
