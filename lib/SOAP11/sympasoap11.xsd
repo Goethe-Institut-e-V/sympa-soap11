@@ -741,6 +741,10 @@
 				Requests versions of the Sympa service components.
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="getVersionResponse">
@@ -773,6 +777,10 @@
 				Requests all robots (Domains) of this Sympa instance.
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="getRobotsResponse">
@@ -796,6 +804,10 @@
 				Requests all list templates from the Sympa robot.
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="getListTemplatesResponse">
