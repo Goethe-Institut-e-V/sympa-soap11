@@ -607,6 +607,9 @@ sub getSubscribers($$) {
                         delete $user->{$f};
                     }
                 }                
+                #TODO: 6.2.72 renamed custom_attribute to attrib
+                # change wsdl and/or simple remove attrib here
+                # maybe rework all, wsdl only the needed attribs and here add all attribs explicitely
                 push @result, $user;
             }
         } while ($user = $list->get_next_list_member());

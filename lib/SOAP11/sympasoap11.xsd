@@ -500,7 +500,7 @@
 					</xsd:element>
 					<xsd:element name="custom_attribute" type="xsd:string" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation></xsd:documentation>
+							<xsd:documentation>6.2.72 renamed to attrib</xsd:documentation>
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="inclusion" type="xsd:string" minOccurs="0" maxOccurs="1">
