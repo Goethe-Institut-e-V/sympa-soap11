@@ -89,7 +89,7 @@ sub checkAuth($) {
     # trusted_application
     #    name 10.10.10.10
     #    md5password 3600
-    my $trusted_apps = Conf::get_robot_conf($ENV{'SYMPA_ROBOT'}, 'trusted_applications');
+    my $trusted_apps = Conf::get_robot_conf($ENV{SYMPA_DOMAIN}, 'trusted_applications');
     foreach my $application (@{$trusted_apps}) {
         if ( $application->{'name'} eq $ENV{'REMOTE_ADDR'} ) {
             $log->syslog('debug2', 'client %s is trusted', $ENV{'REMOTE_ADDR'} );
@@ -104,7 +104,7 @@ sub checkAuth($) {
                 # return authenticated
                 return 1;
             }
-            my $user = Sympa::WWW::Auth::check_auth( $ENV{'SYMPA_ROBOT'}, $email, $password );
+            my $user = Sympa::WWW::Auth::check_auth( $ENV{SYMPA_DOMAIN}, $email, $password );
             unless ($user) {
                 $log->syslog('notice', "login authentication failed for %s from %s", $email, $ENV{'REMOTE_ADDR'});
                 # return unauthenticated
@@ -117,7 +117,7 @@ sub checkAuth($) {
         }
     }
 
-    my $user = Sympa::WWW::Auth::check_auth( $ENV{'SYMPA_ROBOT'}, $email, $password );
+    my $user = Sympa::WWW::Auth::check_auth( $ENV{SYMPA_DOMAIN}, $email, $password );
     unless ($user) {
         $log->syslog('notice', "login authentication failed for %s from %s", $email, $ENV{'REMOTE_ADDR'});
         # return unauthenticated
@@ -145,7 +145,7 @@ sub getVersion($$) {
     if not checkAuth($in);
 
     # return forbidden if not authorized 
-    unless ( Sympa::is_listmaster($ENV{'SYMPA_ROBOT'}, $ENV{'USER_EMAIL'}) ) {
+    unless ( Sympa::is_listmaster($ENV{SYMPA_DOMAIN}, $ENV{'USER_EMAIL'}) ) {
         $log->syslog('info', 'not allowed for %s', $ENV{'USER_EMAIL'});
         return Sympa::WWW::SOAP11::Error::forbidden()
     }
@@ -198,7 +198,7 @@ sub getListTemplates($$) {
     if not checkAuth($in);
 
     # return forbidden if not authorized 
-    unless ( Sympa::is_listmaster($ENV{'SYMPA_ROBOT'}, $ENV{'USER_EMAIL'}) ) {
+    unless ( Sympa::is_listmaster($ENV{SYMPA_DOMAIN}, $ENV{'USER_EMAIL'}) ) {
         $log->syslog('info', 'not allowed for %s', $ENV{'USER_EMAIL'});
         return Sympa::WWW::SOAP11::Error::forbidden()
     }
@@ -206,10 +206,10 @@ sub getListTemplates($$) {
     my @result;  
 
     # the object with all informations about the templates
-    my $tpl = Sympa::WWW::Tools::get_list_list_tpl($ENV{'SYMPA_ROBOT'});
+    my $tpl = Sympa::WWW::Tools::get_list_list_tpl($ENV{SYMPA_DOMAIN});
 
     # helper for parsing the tt2 comment
-    my $parser = Sympa::Template->new($ENV{'SYMPA_ROBOT'});
+    my $parser = Sympa::Template->new($ENV{SYMPA_DOMAIN});
 
     foreach my $template (keys %{$tpl}) {
         my $parse_result;
@@ -217,7 +217,7 @@ sub getListTemplates($$) {
         unless ($parser->parse({}, [ $tpl->{$template}->{'html_content'} ], \$parse_result)) {
             my $error = $parser->{last_error};
             $error = $error->as_string if ref $error;
-            Sympa::send_notify_to_listmaster($ENV{'SYMPA_ROBOT'}, 'web_tt2_error', [$error]);
+            Sympa::send_notify_to_listmaster($ENV{SYMPA_DOMAIN}, 'web_tt2_error', [$error]);
             $log->syslog('info', 'Error parsing template');
         }
         # remove html
@@ -261,7 +261,7 @@ sub getLists($$) {
     
     my @result;
 
-    my $all_lists = Sympa::List::get_lists($ENV{'SYMPA_ROBOT'}, 'filter' => [ '%name%' => $listname, topics => $topic ]);
+    my $all_lists = Sympa::List::get_lists($ENV{SYMPA_DOMAIN}, 'filter' => [ '%name%' => $listname, topics => $topic ]);
     $log->syslog('debug3', 'getLists %s', Dumper $all_lists);
     
     foreach my $list ( @$all_lists ) {
@@ -308,7 +308,7 @@ sub getList($$) {
     
     my @result;
 
-    my $all_lists = Sympa::List::get_lists($ENV{'SYMPA_ROBOT'}, 'filter' => [ name => $listname ]);
+    my $all_lists = Sympa::List::get_lists($ENV{SYMPA_DOMAIN}, 'filter' => [ name => $listname ]);
     $log->syslog('debug3', 'getList %s', Dumper $all_lists);
     
     foreach my $list ( @$all_lists ) {
@@ -414,7 +414,7 @@ sub createList($$) {
     # if subject/info of list was UTF8 (maybe only if lang of list was cyrillic)
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     $log->syslog(
         'info',
@@ -548,7 +548,7 @@ sub getSubscribers($$) {
     my $listname = $in->{getSubscribersRequest}{listname} || '';
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     $log->syslog('debug', '(%s, %s)', $listname, $robot);
 
@@ -649,7 +649,7 @@ sub subscribeSubscribers($$) {
     # get parameters
     my $listname = $in->{subscribeSubscribersRequest}{listname} || '';
 
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -754,7 +754,7 @@ sub addSubscribers($$) {
     my $quiet = $in->{addSubscribersRequest}{quiet} || 0;
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -854,7 +854,7 @@ sub unsubscribeSubscribers($$) {
     my $listname = $in->{unsubscribeSubscribersRequest}{listname} || '';
 
     my $sender                  = undef;
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -944,7 +944,7 @@ sub delSubscribers($$) {
     my $quiet = $in->{delSubscribersRequest}{quiet} || 0;
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -1031,7 +1031,7 @@ sub getSubscriptions($$) {
     my $email = $in->{getSubscriptionsRequest}{email} || '';
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
     
     my @result;
     my %listnames;
@@ -1120,7 +1120,7 @@ sub getAdmins($$) {
     my $role = $in->{getAdminsRequest}{role} || '';
     my $authrole = $in->{getAdminsRequest}{role} || 'owner';
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -1180,7 +1180,7 @@ sub addAdmins($$) {
     my $listname = $in->{addAdminsRequest}{listname} || '';
     my $role = $in->{addAdminsRequest}{role} || '';
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -1216,7 +1216,7 @@ sub addAdmins($$) {
 
         # ommit if already has role 
         if ( $list->is_admin($role, $email) ) {
-            $log->syslog('info', '%s already %s of the list %s@%s',$email, $role, $listname, $ENV{'SYMPA_ROBOT'});
+            $log->syslog('info', '%s already %s of the list %s@%s',$email, $role, $listname, $ENV{SYMPA_DOMAIN});
             $status{$email} = "Already is $role";
             next;
         }
@@ -1295,7 +1295,7 @@ sub delAdmins($$) {
     my $listname = $in->{delAdminsRequest}{listname} || '';
     my $role = $in->{delAdminsRequest}{role} || '';
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);
@@ -1435,7 +1435,7 @@ sub changeEmail($$) {
     my $email = $in->{changeEmailRequest}{new};
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     $current_email = Sympa::Tools::Text::canonic_email($current_email);
     $email = Sympa::Tools::Text::canonic_email($email);
@@ -1537,7 +1537,7 @@ sub _closeList($$) {
     my $listname = $in->{closeListRequest}{listname} || '';
     my $mode = $in->{closeListRequest}{mode} || 'close';
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{'SYMPA_ROBOT'};
+    my $robot                   = $ENV{SYMPA_DOMAIN};
 
     # return error if unknown list
     my $list = Sympa::List->new($listname, $robot);

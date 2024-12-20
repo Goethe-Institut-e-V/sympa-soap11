@@ -186,8 +186,8 @@ $daemon->operationsFromWSDL (
 while ( my $query = new CGI::Fast ) {
     # from SOAP::Transport.pm
     # Select appropriate robot.
-    $ENV{'SYMPA_ROBOT'} = Sympa::WWW::Tools::get_robot('soap_url_local', 'soap_url');
-    $log->syslog('debug3', 'sympasoap11 for SYMPA_ROBOT: %s', $ENV{'SYMPA_ROBOT'});
+    $ENV{SYMPA_DOMAIN} = Sympa::WWW::Tools::get_robot('soap_url_local', 'soap_url');
+    $log->syslog('debug3', 'sympasoap11 for SYMPA_DOMAIN: %s', $ENV{SYMPA_DOMAIN});
 
     $daemon->runCgiRequest( query => $query, nph => 0 );
 }
