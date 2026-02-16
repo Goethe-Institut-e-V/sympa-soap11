@@ -457,14 +457,19 @@
 
 	<xsd:complexType name="SubscriberType">
 		<xsd:annotation>
-			<xsd:documentation>This type fits the Sympa Subscriber Object</xsd:documentation>
+			<xsd:documentation>This type mostly fits the Sympa Subscriber Object</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexContent>
 			<xsd:extension base="sym:PersonType">	
 				<xsd:sequence>
 					<xsd:element name="subscribed" type="xsd:boolean" minOccurs="1" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation>is user subscribed</xsd:documentation>
+							<xsd:documentation>true if user is subscribed</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="pending" type="xsd:boolean" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation>true if user is in pending state (opt-in). This is an extension to the Subscriber Object.</xsd:documentation>
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="date" type="xsd:string" minOccurs="1" maxOccurs="1">

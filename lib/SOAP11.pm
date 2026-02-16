@@ -29,6 +29,11 @@ use Sympa::List;
 use Sympa::Log;
 use Sympa::Scenario;
 use Sympa::WWW::Auth;
+use Sympa::Spool::Auth;
+
+# Pending subscriptions
+use Time::Piece;
+use Time::Local qw(timegm);
 
 # SOAP11
 use constant VERSION => '0.6.0';
@@ -84,7 +89,7 @@ sub checkAuth($) {
     }
 
     # trusted_application: see Sympa::WWW:Auth sub remote_app_check_password
-    # we use trusted_applications.conf in robot or sympa
+    # we use trusted_applications.conf in domain or sympa
     # to declare IP and cachetime for soap clients
     # trusted_application
     #    name 10.10.10.10
@@ -1031,18 +1036,32 @@ sub getSubscriptions($$) {
     my $email = $in->{getSubscriptionsRequest}{email} || '';
 
     my $sender                  = $ENV{'USER_EMAIL'};
-    my $robot                   = $ENV{SYMPA_DOMAIN};
+    my $domain                   = $ENV{SYMPA_DOMAIN};
     
     my @result;
     my %listnames;
 
     foreach my $role ('member', 'owner', 'editor') {
-        foreach my $list (Sympa::List::get_which($email, $robot, $role)) {
+        foreach my $list (Sympa::List::get_which($email, $domain, $role)) {
             my $name = $list->{'name'};
             $listnames{$name} = $list;
         }
     }
-    
+
+    # Pending subscribe requests
+    my $pending_by_key = _pending_subscribe_by_email_robot($email, $domain);
+
+    # Add pending lists to the set (domain-scoped, so safe)
+    foreach my $k (keys %{$pending_by_key}) {
+        my $p = $pending_by_key->{$k};
+
+        my $plist = Sympa::List->new($p->{listname}, $domain);
+        next unless $plist;
+
+        my $name = $plist->{'name'};
+        $listnames{$name} = $plist unless $listnames{$name};
+    }
+
     foreach my $name (keys %listnames) {
         my $list = $listnames{$name};
         my $list_address;
@@ -1050,14 +1069,13 @@ sub getSubscriptions($$) {
         
         my $result = Sympa::Scenario->new($list, 'visibility')->authz(
             'md5',
-            {   'sender'                  => $sender,
-            }
+            { 'sender' => $sender, }
         );
         my $action;
         $action = $result->{'action'} if (ref($result) eq 'HASH');
         next unless ($action =~ /do_it/i);
-        
-        $result_item->{'name'} = $list->{'name'};
+
+        $result_item->{'name'}    = $list->{'name'};
         $result_item->{'address'} = Sympa::get_address($list);
         $result_item->{'subject'} = $list->{'admin'}{'subject'};
         $result_item->{'subject'} =~ s/;/,/g;
@@ -1076,6 +1094,13 @@ sub getSubscriptions($$) {
             $result_item->{'subscribed'} = 1;
         }
 
+        # Mark pending if not subscribed
+        $result_item->{'pending'} = 0;
+        my $pkey = $list->{'name'} . '@' . $domain;
+        if (!$result_item->{'subscribed'} && $pending_by_key->{$pkey}) {
+            $result_item->{'pending'} = 1;
+        }
+
         if ($result_item->{'subscribed'}) {
             if (my $subscriber = $list->get_list_member($email)) {
                 # insert bounce information of this user for this list
@@ -1087,19 +1112,18 @@ sub getSubscriptions($$) {
                         $Conf::Conf{'db_additional_subscriber_fields'}) {
                         delete $subscriber->{$f};
                     }
-                }                
+                }
                 $result_item->{'subscriber'} = $subscriber;
                 $log->syslog('debug2', 'subscriber: %s', Dumper \$subscriber);
             }
         }
 
-        push @result, $result_item;    
+        push @result, $result_item;
     }
 
     $log->syslog('debug2', 'getSubscriptions: %s', Dumper \@result);
-       return { listname => \@result };
+    return { listname => \@result };
 }
-
 
 
 
@@ -1591,5 +1615,104 @@ sub _closeList($$) {
     return { status => 'OK' };
 }
 
+
+# Convert various "expire" formats to epoch seconds.
+sub _expire_to_epoch {
+    my ($v) = @_;
+    return undef unless defined $v;
+
+    # Already epoch
+    return int($v) if $v =~ /^\d{9,}$/;
+
+    # ISO-ish: 2026-02-10 12:34:56 or 2026-02-10T12:34:56Z
+    if ($v =~ /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?(?:Z)?$/) {
+        my ($Y,$m,$d,$H,$M,$S) = ($1,$2,$3,$4//0,$5//0,$6//0);
+        return timegm($S,$M,$H,$d,$m-1,$Y); # treat as UTC
+    }
+
+    # RFC-ish: Tue, 10 Feb 2026 12:34:56 GMT
+    my $epoch;
+    eval {
+        my $tp = Time::Piece->strptime($v, '%a, %d %b %Y %H:%M:%S %Z');
+        $epoch = $tp->epoch;
+        1;
+    } or return undef;
+
+    return $epoch;
+}
+
+sub _spool_extract_email {
+    my ($r) = @_;
+    return
+          $r->{email}
+       // $r->{sender}
+       // ($r->{context} ? ($r->{context}->{email} // $r->{context}->{sender}) : undef);
+}
+
+sub _spool_extract_list_robot {
+    my ($r) = @_;
+
+    if (defined $r->{listname}) {
+        return ($r->{listname}, $r->{robot});
+    }
+
+    my $ctx = $r->{context} || {};
+    if (my $list = $ctx->{list}) {
+        if (ref($list) && $list->can('name')) {
+            return ($list->name, $list->domain);
+        } elsif (!ref($list) && $list =~ /^([^@]+)\@(.+)$/) {
+            return ($1, $2);
+        }
+    }
+
+    return ($ctx->{listname}, $ctx->{robot});
+}
+
+# Returns pending and still valid subscribe requests for this email on THIS robot,
+# keyed by "listname@robot".
+sub _pending_subscribe_by_email_robot {
+    my ($email, $robot) = @_;
+    return {} unless $email && $robot;
+
+    my $needle = lc $email;
+    my $rb     = lc $robot;
+    my $now    = time();
+
+    my $spool = Sympa::Spool::Auth->new(
+        action => 'subscribe',
+        # role => 'member',
+    );
+
+    my %pending;
+
+    while (my $r = $spool->next) {
+        my $addr = _spool_extract_email($r);
+        next unless defined $addr;
+        next unless lc($addr) eq $needle;
+
+        my ($listname, $r_robot) = _spool_extract_list_robot($r);
+        next unless $listname && $r_robot;
+
+        # ROBOT SCOPED
+        next unless lc($r_robot) eq $rb;
+
+        my $expire = $r->{expire} // ($r->{context} ? $r->{context}->{expire} : undef);
+        my $exp_epoch = _expire_to_epoch($expire);
+
+        # Only keep requests that are clearly still valid.
+        # If expire is missing/unknown, treat as NOT valid to avoid false "pending".
+        next unless defined($exp_epoch) && $exp_epoch > $now;
+
+        my $key = "$listname\@$r_robot";
+        $pending{$key} = {
+            listname => $listname,
+            robot    => $r_robot,
+            date     => $r->{date}   // ($r->{context} ? $r->{context}->{date}   : undef),
+            expire   => $expire,
+        };
+    }
+
+    return \%pending;
+}
 
 1;
