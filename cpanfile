@@ -12,4 +12,8 @@ requires 'CGI::Fast', '>= 0';
 requires 'Digest::SHA', '>= 0';
 requires 'Data::Dumper', '>= 0';
 
+# from patch "pending subscribes"
+requires 'Time::Local', '>= 0';
+requires 'Time::Piece', '>= 0';
+
 #};
