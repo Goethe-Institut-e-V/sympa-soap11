@@ -1643,6 +1643,8 @@ sub _expire_to_epoch {
 
 sub _spool_extract_email {
     my ($r) = @_;
+    #FIXME: kommt nich tzurück , was passiert hiernach???
+    # r ist object Sympa::LockedFile
     return
           $r->{email}
        // $r->{sender}
@@ -1686,6 +1688,7 @@ sub _pending_subscribe_by_email_robot {
     my %pending;
 
     while (my $r = $spool->next) {
+        #FIXME: kommt nich tzurück 
         my $addr = _spool_extract_email($r);
         next unless defined $addr;
         next unless lc($addr) eq $needle;
