@@ -469,7 +469,7 @@
 					</xsd:element>
 					<xsd:element name="pending" type="xsd:boolean" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
-							<xsd:documentation>true if user is in pending state (opt-in). This is an extension to the Subscriber Object.</xsd:documentation>
+							<xsd:documentation>(element not yet set) true if user is in pending state (opt-in). This is an extension to the Subscriber Object.</xsd:documentation>
 						</xsd:annotation>
 					</xsd:element>
 					<xsd:element name="date" type="xsd:string" minOccurs="1" maxOccurs="1">
@@ -1302,6 +1302,7 @@
 							<xsd:element name="owner" type="xsd:boolean" minOccurs="1" maxOccurs="1" />
 							<xsd:element name="editor" type="xsd:boolean" minOccurs="1" maxOccurs="1" />
 							<xsd:element name="subscribed" type="xsd:boolean" minOccurs="1" maxOccurs="1" />
+							<xsd:element name="pending" type="xsd:boolean" minOccurs="1" maxOccurs="1" />
 							<xsd:element name="subscriber" type="sym:SubscriberType" minOccurs="0" maxOccurs="1" />
 						</xsd:sequence>
 					</xsd:complexType>

@@ -1048,14 +1048,18 @@ sub getSubscriptions($$) {
         }
     }
 
+
+
+
+
+
+
     # Pending subscribe requests
-    my $pending_by_key = _pending_subscribe_by_email_robot($email, $domain);
+    my $pending_by_list = _pending_subscribe_by_email_robot($email, $domain);
 
     # Add pending lists to the set (domain-scoped, so safe)
-    foreach my $k (keys %{$pending_by_key}) {
-        my $p = $pending_by_key->{$k};
-
-        my $plist = Sympa::List->new($p->{listname}, $domain);
+    foreach my $key (keys %{$pending_by_list}) {
+        my $plist = Sympa::List->new($key, $domain);
         next unless $plist;
 
         my $name = $plist->{'name'};
@@ -1096,8 +1100,7 @@ sub getSubscriptions($$) {
 
         # Mark pending if not subscribed
         $result_item->{'pending'} = 0;
-        my $pkey = $list->{'name'} . '@' . $domain;
-        if (!$result_item->{'subscribed'} && $pending_by_key->{$pkey}) {
+        if (!$result_item->{'subscribed'} && $pending_by_list->{$list->{'name'}}) {
             $result_item->{'pending'} = 1;
         }
 
@@ -1641,44 +1644,11 @@ sub _expire_to_epoch {
     return $epoch;
 }
 
-sub _spool_extract_email {
-    my ($r) = @_;
-    #FIXME: kommt nich tzurück , was passiert hiernach???
-    # r ist object Sympa::LockedFile
-    return
-          $r->{email}
-       // $r->{sender}
-       // ($r->{context} ? ($r->{context}->{email} // $r->{context}->{sender}) : undef);
-}
-
-sub _spool_extract_list_robot {
-    my ($r) = @_;
-
-    if (defined $r->{listname}) {
-        return ($r->{listname}, $r->{robot});
-    }
-
-    my $ctx = $r->{context} || {};
-    if (my $list = $ctx->{list}) {
-        if (ref($list) && $list->can('name')) {
-            return ($list->name, $list->domain);
-        } elsif (!ref($list) && $list =~ /^([^@]+)\@(.+)$/) {
-            return ($1, $2);
-        }
-    }
-
-    return ($ctx->{listname}, $ctx->{robot});
-}
-
 # Returns pending and still valid subscribe requests for this email on THIS robot,
 # keyed by "listname@robot".
 sub _pending_subscribe_by_email_robot {
     my ($email, $robot) = @_;
     return {} unless $email && $robot;
-
-    my $needle = lc $email;
-    my $rb     = lc $robot;
-    my $now    = time();
 
     my $spool = Sympa::Spool::Auth->new(
         action => 'subscribe',
@@ -1687,34 +1657,48 @@ sub _pending_subscribe_by_email_robot {
 
     my %pending;
 
-    while (my $r = $spool->next) {
-        #FIXME: kommt nich tzurück 
-        my $addr = _spool_extract_email($r);
-        next unless defined $addr;
-        next unless lc($addr) eq $needle;
+   # snippet from Sympa::Spool::Auth->next
+    return unless $spool->{directory};
 
-        my ($listname, $r_robot) = _spool_extract_list_robot($r);
-        next unless $listname && $r_robot;
+    unless ($spool->{_metadatas}) {
+        $spool->{_metadatas} = $spool->_load;
+    }
+    unless ($spool->{_metadatas} and @{$spool->{_metadatas}}) {
+        undef $spool->{_metadatas};
+        $spool->_init(1);
+        return;
+    }
+    # end
 
-        # ROBOT SCOPED
-        next unless lc($r_robot) eq $rb;
+    $log->syslog('debug2', '******************* daten: %s', Dumper $spool->{_metadatas});
+    $log->syslog('debug2', '=================== WHILE');
+    while (my $marshalled = shift @{$spool->{_metadatas}}) {
+        $log->syslog('debug2', '******************* marshalled: %s', Dumper $marshalled);
+        my $metadata = $spool->unmarshal($marshalled);
+        $log->syslog('debug2', '******************* email: %s', $metadata->{email});
+        $log->syslog('debug2', '******************* email: %s', $metadata->{domainpart});
+        $log->syslog('debug2', '******************* email: %s', $metadata->{listname});
 
-        my $expire = $r->{expire} // ($r->{context} ? $r->{context}->{expire} : undef);
-        my $exp_epoch = _expire_to_epoch($expire);
+        $log->syslog('debug2', '******************* metadata: %s', Dumper $metadata);
+
+        # lc needed??
+        next unless lc($metadata->{email}) eq lc($email);
+        next unless lc($metadata->{domainpart}) eq lc($robot);
 
         # Only keep requests that are clearly still valid.
         # If expire is missing/unknown, treat as NOT valid to avoid false "pending".
-        next unless defined($exp_epoch) && $exp_epoch > $now;
+        # how? needed?
+        #my $now    = time();
 
-        my $key = "$listname\@$r_robot";
-        $pending{$key} = {
-            listname => $listname,
-            robot    => $r_robot,
-            date     => $r->{date}   // ($r->{context} ? $r->{context}->{date}   : undef),
-            expire   => $expire,
+        $pending{$metadata->{listname}} = {
+            listname => $metadata->{listname},
+            robot    => $metadata->{domainpart},
         };
-    }
 
+    }
+    $log->syslog('debug2', '=================== ENDE');
+
+    $log->syslog('debug2', 'pending subscriptions: %s', Dumper \%pending);
     return \%pending;
 }
 
