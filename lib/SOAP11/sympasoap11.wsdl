@@ -1295,6 +1295,7 @@
 							<xsd:element maxOccurs="1" minOccurs="1" name="owner" type="xsd:boolean"/>
 							<xsd:element maxOccurs="1" minOccurs="1" name="editor" type="xsd:boolean"/>
 							<xsd:element maxOccurs="1" minOccurs="1" name="subscribed" type="xsd:boolean"/>
+							<xsd:element maxOccurs="1" minOccurs="1" name="pending" type="xsd:boolean"/>
 							<xsd:element maxOccurs="1" minOccurs="0" name="subscriber" type="sym:SubscriberType"/>
 						</xsd:sequence>
 					</xsd:complexType>

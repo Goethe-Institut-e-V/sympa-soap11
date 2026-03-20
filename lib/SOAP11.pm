@@ -1021,8 +1021,8 @@ sub delSubscribers($$) {
 
 #
 # getSubscriptions
-#     'which' in sympasoap
-#    returns the lists a email (user) is subscribed to
+#   'which' in sympasoap
+#   returns the lists a email (user) is subscribed to
 #   Note: there is a request spindle "which" but informs the requester via mail
 #
 sub getSubscriptions($$) {
@@ -1047,12 +1047,6 @@ sub getSubscriptions($$) {
             $listnames{$name} = $list;
         }
     }
-
-
-
-
-
-
 
     # Pending subscribe requests
     my $pending_by_list = _pending_subscribe_by_email_robot($email, $domain);
@@ -1619,45 +1613,22 @@ sub _closeList($$) {
 }
 
 
-# Convert various "expire" formats to epoch seconds.
-sub _expire_to_epoch {
-    my ($v) = @_;
-    return undef unless defined $v;
 
-    # Already epoch
-    return int($v) if $v =~ /^\d{9,}$/;
 
-    # ISO-ish: 2026-02-10 12:34:56 or 2026-02-10T12:34:56Z
-    if ($v =~ /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?(?:Z)?$/) {
-        my ($Y,$m,$d,$H,$M,$S) = ($1,$2,$3,$4//0,$5//0,$6//0);
-        return timegm($S,$M,$H,$d,$m-1,$Y); # treat as UTC
-    }
-
-    # RFC-ish: Tue, 10 Feb 2026 12:34:56 GMT
-    my $epoch;
-    eval {
-        my $tp = Time::Piece->strptime($v, '%a, %d %b %Y %H:%M:%S %Z');
-        $epoch = $tp->epoch;
-        1;
-    } or return undef;
-
-    return $epoch;
-}
-
-# Returns pending and still valid subscribe requests for this email on THIS robot,
-# keyed by "listname@robot".
+# Returns pending (and still valid) subscribe requests for this email on THIS robot,
+# keyed by listname.
+# Based on Sympa::Spool::Auth->next
 sub _pending_subscribe_by_email_robot {
     my ($email, $robot) = @_;
     return {} unless $email && $robot;
 
+    # Note:if subscribe needs to be confirmed by admin, then status changes to 'add'
+    # We could run a second Spool/loop with action => 'add'
+    # but this works also: don't specify action here and check at each item later
     my $spool = Sympa::Spool::Auth->new(
-        action => 'subscribe',
-        # role => 'member',
+        #action => 'subscribe',
     );
 
-    my %pending;
-
-   # snippet from Sympa::Spool::Auth->next
     return unless $spool->{directory};
 
     unless ($spool->{_metadatas}) {
@@ -1668,37 +1639,31 @@ sub _pending_subscribe_by_email_robot {
         $spool->_init(1);
         return;
     }
-    # end
-
-    $log->syslog('debug2', '******************* daten: %s', Dumper $spool->{_metadatas});
-    $log->syslog('debug2', '=================== WHILE');
+  
+    my %pending;
     while (my $marshalled = shift @{$spool->{_metadatas}}) {
-        $log->syslog('debug2', '******************* marshalled: %s', Dumper $marshalled);
         my $metadata = $spool->unmarshal($marshalled);
-        $log->syslog('debug2', '******************* email: %s', $metadata->{email});
-        $log->syslog('debug2', '******************* email: %s', $metadata->{domainpart});
-        $log->syslog('debug2', '******************* email: %s', $metadata->{listname});
-
         $log->syslog('debug2', '******************* metadata: %s', Dumper $metadata);
 
-        # lc needed??
-        next unless lc($metadata->{email}) eq lc($email);
-        next unless lc($metadata->{domainpart}) eq lc($robot);
+        # to lower case provided email!
+        next unless $metadata->{email} eq lc($email);
+        next unless $metadata->{domainpart} eq $robot;
+        next unless $metadata->{action} eq 'subscribe' || $metadata->{action} eq 'add';
 
         # Only keep requests that are clearly still valid.
-        # If expire is missing/unknown, treat as NOT valid to avoid false "pending".
-        # how? needed?
+        # Does Sympa track this? I see very old files in spool.
+        # Also, one can invity many times, confirming does not clean up the other ones
         #my $now    = time();
+        #unix time of request
+        #$metadata->{date}
 
         $pending{$metadata->{listname}} = {
             listname => $metadata->{listname},
             robot    => $metadata->{domainpart},
+            date    => $metadata->{date},
         };
-
     }
-    $log->syslog('debug2', '=================== ENDE');
 
-    $log->syslog('debug2', 'pending subscriptions: %s', Dumper \%pending);
     return \%pending;
 }
 
