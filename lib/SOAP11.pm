@@ -36,7 +36,7 @@ use Time::Piece;
 use Time::Local qw(timegm);
 
 # SOAP11
-use constant VERSION => '0.6.0';
+use constant VERSION => '1.0.0';
 my $VERSION = Sympa::WWW::SOAP11::VERSION; # Module::Build reads this line
 use Sympa::WWW::SOAP11::Error;
 use Digest::SHA qw(sha256);
